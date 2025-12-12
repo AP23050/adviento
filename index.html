@@ -204,14 +204,13 @@ footer{
 </section>
 
 <!-- PROGRESS -->
-<div id="progressBox">
+<div id="progressBox" style="display:none;">
   <div id="progressBar"></div>
   <p id="progressText">Progreso: 0%</p>
 </div>
 
 <!-- CALENDAR -->
-<div id="calendar"></div>
-
+<div id="calendar" style="display:none;"></div>
 <!-- MODAL -->
 <div id="modal">
   <div class="modalBox">
@@ -223,14 +222,12 @@ footer{
 </div>
 
 <!-- GALLERY -->
-<section id="gallery">
+<section id="gallery" style="display:none;">
   <h2>Galería de recuerdos 📸</h2>
   <img id="galleryImg">
   <p id="galleryText"></p>
-  <div class="galleryNav">
-    <button onclick="prev()">Anterior</button>
-    <button onclick="next()">Siguiente</button>
-  </div>
+  <button onclick="prev()">Anterior</button>
+  <button onclick="next()">Siguiente</button>
 </section>
 
 <footer>Te ama mucho Rodri ❤️</footer>
