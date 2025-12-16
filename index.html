@@ -3,16 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎁 Calendario de Adviento para Macy 🎁</title>
+<title>🎁 Calendario de Adviento para Macy</title>
 
 <style>
 :root{
-  --pink:#f6c1d1;
-  --lav:#e7c6ff;
-  --mint:#c1e1dc;
-  --beige:#fff4c1;
-  --accent:#ff7a8a;
-  --text:#5b3c3c;
+  --pink:#f6c1d1;--lav:#e7c6ff;--mint:#c1e1dc;--beige:#fff4c1;
+  --accent:#ff7a8a;--text:#5b3c3c;
 }
 *{box-sizing:border-box}
 body{
@@ -23,120 +19,42 @@ body{
   min-height:100vh;
 }
 .app{max-width:720px;margin:auto;padding:20px;text-align:center}
-
-#welcome{margin-top:15vh}
-#welcome h1{color:#d81b60}
-#welcome button{
-  padding:15px 40px;
-  border:none;
-  border-radius:30px;
-  background:var(--accent);
-  color:#fff;
-  font-size:1.1rem;
-}
-
-#progressBox{
-  display:none;
-  background:#fff;
-  padding:15px;
-  border-radius:20px;
-  margin:20px 0;
-}
-#progressBar{
-  height:18px;
-  border-radius:10px;
-  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
-  width:0%;
-  transition:.4s;
-}
-
-#calendar{
-  display:none;
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:10px;
-}
-.day{
-  background:#fff;
-  border-radius:16px;
-  padding:18px 0;
-  font-weight:700;
-  cursor:pointer;
-}
+#progressBox{background:#fff;padding:15px;border-radius:20px;margin:20px 0}
+#progressBar{height:18px;border-radius:10px;background:linear-gradient(90deg,#ff9aa2,#ffb7b2);width:0%}
+#calendar{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.day{background:#fff;border-radius:16px;padding:18px 0;font-weight:700}
 .day.opened{background:#ffe3ea}
-
 #modal{
-  display:none;
-  position:fixed;
-  inset:0;
+  display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.55);
-  align-items:center;
-  justify-content:center;
-  z-index:999;
+  align-items:center;justify-content:center;
 }
 .modalBox{
-  position:relative;
-  background:#fff;
-  padding:25px;
-  border-radius:20px;
-  width:90%;
-  max-width:400px;
+  background:#fff;padding:25px;border-radius:20px;
+  width:90%;max-width:400px;position:relative;
 }
 .closeBtn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  border:none;
-  background:#eee;
-  border-radius:50%;
-  width:32px;
-  height:32px;
-  font-size:18px;
-  cursor:pointer;
+  position:absolute;top:10px;right:10px;
+  border:none;background:#eee;border-radius:50%;
+  width:32px;height:32px;font-size:18px;cursor:pointer;
 }
-
-#countdown{font-size:3rem;color:#d81b60}
-#giftText{font-size:1.3rem;margin:10px 0}
-
-#saveBtn{
-  margin-top:15px;
-  padding:12px 20px;
-  border:none;
+.saveBtn{
+  margin-top:15px;padding:12px 26px;border:none;
   border-radius:14px;
-  background:var(--accent);
-  color:#fff;
-  font-size:1rem;
-  opacity:.6;
+  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
+  color:#fff;font-size:1rem;cursor:pointer;
 }
-#saveBtn.enabled{opacity:1}
-
-#gallery{display:none;margin-top:30px}
+#gallery{margin-top:30px}
 #gallery img{max-width:100%;border-radius:15px}
-.galleryNav button{
-  margin:10px;
-  padding:10px 22px;
-  border:none;
-  border-radius:12px;
-  background:var(--accent);
-  color:#fff;
-}
-
-footer{margin:40px 0;color:#d81b60}
-
-@media(max-width:600px){
-  #calendar{grid-template-columns:repeat(4,1fr)}
-}
+footer{margin:40px 0;font-size:1.3rem;color:#d81b60}
+@media(max-width:600px){#calendar{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 
 <body>
 <div class="app">
 
-<section id="welcome">
-  <h1>🎁 Calendario de Adviento para Macy 🎁</h1>
-  <p>Un regalo por día, con amor de Rodri</p>
-  <button id="startBtn">Iniciamos</button>
-</section>
+<h2>Calendario de Adviento 🎄</h2>
 
 <div id="progressBox">
   <div id="progressBar"></div>
@@ -148,24 +66,19 @@ footer{margin:40px 0;color:#d81b60}
 <div id="modal">
   <div class="modalBox">
     <button class="closeBtn" onclick="closeModal()">✖</button>
-    <div id="countdown"></div>
     <div id="giftText"></div>
-    <input type="file" id="photoInput" accept="image/*">
-    <button id="saveBtn" disabled>💾 Guardar recuerdo</button>
+    <input type="file" id="photoInput" accept="image/*" style="display:none">
+    <button id="saveBtn" class="saveBtn" style="display:none">💾 Guardar recuerdo</button>
   </div>
 </div>
 
 <section id="gallery">
-  <h2>Galería de recuerdos 📸</h2>
+  <h3>Galería de recuerdos 📸</h3>
   <img id="galleryImg">
-  <p id="galleryText"></p>
-  <div class="galleryNav">
-    <button onclick="prev()">Anterior</button>
-    <button onclick="next()">Siguiente</button>
-  </div>
 </section>
 
 <footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
+
 </div>
 
 <!-- FIREBASE -->
@@ -186,137 +99,73 @@ firebase.initializeApp({
 const db=firebase.firestore();
 const storage=firebase.storage();
 
-const gifts=[
-"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
-"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
-"Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
-"Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
-];
+const gifts=[...Array(24)].map((_,i)=>`Regalo del día ${i+1}`);
+const id="macy";
 
-const id=new URLSearchParams(location.search).get("id")||"macy";
-let opened=[], photos={}, galleryIndex=0;
+let data={opened:[],photo24:null};
 let selectedFile=null;
 let currentDay=null;
 
-const startBtn=document.getElementById("startBtn");
-const welcome=document.getElementById("welcome");
-const progressBox=document.getElementById("progressBox");
-const progressBar=document.getElementById("progressBar");
-const progressText=document.getElementById("progressText");
 const calendar=document.getElementById("calendar");
 const modal=document.getElementById("modal");
-const countdown=document.getElementById("countdown");
 const giftText=document.getElementById("giftText");
 const photoInput=document.getElementById("photoInput");
 const saveBtn=document.getElementById("saveBtn");
-const gallery=document.getElementById("gallery");
 const galleryImg=document.getElementById("galleryImg");
-const galleryText=document.getElementById("galleryText");
 
-startBtn.onclick=()=>{
-  welcome.style.display="none";
-  progressBox.style.display="block";
-  calendar.style.display="grid";
-  gallery.style.display="block";
-  load();
-};
+const TARGET_DATE=new Date("2025-12-24T00:00:00");
 
-function closeModal(){
-  modal.style.display="none";
-  selectedFile=null;
-  saveBtn.disabled=true;
-  saveBtn.classList.remove("enabled");
-}
-
-modal.addEventListener("click",e=>{
-  if(e.target===modal) closeModal();
+db.collection("calendars").doc(id).get().then(s=>{
+  if(s.exists) data=s.data();
+  else db.collection("calendars").doc(id).set(data);
+  render();
 });
 
-async function load(){
-  const ref=db.collection("calendars").doc(id);
-  const snap=await ref.get();
-  if(snap.exists){
-    opened=snap.data().opened||[];
-    photos=snap.data().photos||{};
-  }else{
-    await ref.set({opened:[],photos:{}});
-  }
-  update(); renderCalendar(); renderGallery();
-}
-
-function save(){
-  return db.collection("calendars").doc(id).update({opened,photos});
-}
-
-function update(){
-  const p=Math.round(opened.length/24*100);
-  progressBar.style.width=p+"%";
-  progressText.textContent="Progreso: "+p+"%";
-}
-
-function renderCalendar(){
+function render(){
   calendar.innerHTML="";
+  data.opened.forEach(()=>{});
   for(let i=1;i<=24;i++){
     const d=document.createElement("div");
-    d.className="day"+(opened.includes(i)?" opened":"");
+    d.className="day"+(data.opened.includes(i)?" opened":"");
     d.textContent=i;
     d.onclick=()=>openDay(i);
     calendar.appendChild(d);
   }
+  if(data.photo24) galleryImg.src=data.photo24;
+  document.getElementById("progressBar").style.width=(data.opened.length/24*100)+"%";
 }
 
 function openDay(day){
-  if(opened.includes(day))return;
-  if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
-
   currentDay=day;
+  giftText.textContent=gifts[day-1];
+  photoInput.style.display="none";
+  saveBtn.style.display="none";
   modal.style.display="flex";
-  giftText.textContent="";
-  countdown.textContent="3";
-  let c=3;
-  const t=setInterval(()=>{
-    c--;
-    countdown.textContent=c>0?c:"🎁";
-    if(c===0){
-      clearInterval(t);
-      giftText.textContent=gifts[day-1];
-    }
-  },700);
+
+  const now=new Date();
+
+  if(day===24 && now>=TARGET_DATE && !data.photo24){
+    photoInput.style.display="block";
+    saveBtn.style.display="inline-block";
+  }
 }
 
-photoInput.onchange=()=>{
-  selectedFile=photoInput.files[0];
-  if(selectedFile){
-    saveBtn.disabled=false;
-    saveBtn.classList.add("enabled");
-  }
-};
+photoInput.onchange=e=>selectedFile=e.target.files[0];
 
 saveBtn.onclick=()=>{
-  if(!selectedFile||!currentDay)return;
-  const ref=storage.ref(`adviento/${id}/day${currentDay}.jpg`);
-  ref.put(selectedFile).then(()=>{
-    ref.getDownloadURL().then(url=>{
-      photos[currentDay]=url;
-      opened.push(currentDay);
-      closeModal();
-      save().then(()=>{
-        update(); renderCalendar(); renderGallery();
-      });
+  if(!selectedFile) return alert("Selecciona una foto");
+  const ref=storage.ref(`adviento/${id}/dia24.jpg`);
+  ref.put(selectedFile).then(()=>ref.getDownloadURL()).then(url=>{
+    data.photo24=url;
+    data.opened.push(24);
+    db.collection("calendars").doc(id).update(data).then(()=>{
+      modal.style.display="none";
+      render();
     });
   });
 };
 
-function renderGallery(){
-  const days=Object.keys(photos);
-  if(!days.length)return;
-  galleryIndex=Math.min(galleryIndex,days.length-1);
-  const d=days[galleryIndex];
-  galleryImg.src=photos[d];
-  galleryText.textContent="Día "+d+" – "+gifts[d-1];
-}
-window.prev=()=>{galleryIndex=Math.max(0,galleryIndex-1);renderGallery();}
-window.next=()=>{galleryIndex++;renderGallery();}
+function closeModal(){modal.style.display="none";}
 </script>
 
 </body>
