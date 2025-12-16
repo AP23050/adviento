@@ -61,6 +61,7 @@ body{
   border-radius:16px;
   padding:18px 0;
   font-weight:700;
+  cursor:pointer;
 }
 .day.opened{background:#ffe3ea}
 
@@ -96,6 +97,18 @@ body{
 
 #countdown{font-size:3rem;color:#d81b60}
 #giftText{font-size:1.3rem;margin:10px 0}
+
+#saveBtn{
+  margin-top:15px;
+  padding:12px 20px;
+  border:none;
+  border-radius:14px;
+  background:var(--accent);
+  color:#fff;
+  font-size:1rem;
+  opacity:.6;
+}
+#saveBtn.enabled{opacity:1}
 
 #gallery{display:none;margin-top:30px}
 #gallery img{max-width:100%;border-radius:15px}
@@ -138,6 +151,7 @@ footer{margin:40px 0;color:#d81b60}
     <div id="countdown"></div>
     <div id="giftText"></div>
     <input type="file" id="photoInput" accept="image/*">
+    <button id="saveBtn" disabled>💾 Guardar recuerdo</button>
   </div>
 </div>
 
@@ -179,8 +193,10 @@ const gifts=[
 "Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
 ];
 
-const id="macy";
+const id=new URLSearchParams(location.search).get("id")||"macy";
 let opened=[], photos={}, galleryIndex=0;
+let selectedFile=null;
+let currentDay=null;
 
 const startBtn=document.getElementById("startBtn");
 const welcome=document.getElementById("welcome");
@@ -192,6 +208,7 @@ const modal=document.getElementById("modal");
 const countdown=document.getElementById("countdown");
 const giftText=document.getElementById("giftText");
 const photoInput=document.getElementById("photoInput");
+const saveBtn=document.getElementById("saveBtn");
 const gallery=document.getElementById("gallery");
 const galleryImg=document.getElementById("galleryImg");
 const galleryText=document.getElementById("galleryText");
@@ -206,6 +223,9 @@ startBtn.onclick=()=>{
 
 function closeModal(){
   modal.style.display="none";
+  selectedFile=null;
+  saveBtn.disabled=true;
+  saveBtn.classList.remove("enabled");
 }
 
 modal.addEventListener("click",e=>{
@@ -249,6 +269,7 @@ function openDay(day){
   if(opened.includes(day))return;
   if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
 
+  currentDay=day;
   modal.style.display="flex";
   giftText.textContent="";
   countdown.textContent="3";
@@ -261,21 +282,30 @@ function openDay(day){
       giftText.textContent=gifts[day-1];
     }
   },700);
+}
 
-  photoInput.value="";
-  photoInput.onchange=()=>{
-    const file=photoInput.files[0];
-    const ref=storage.ref(`adviento/${id}/day${day}.jpg`);
-    ref.put(file).then(()=>{
-      ref.getDownloadURL().then(url=>{
-        photos[day]=url;
-        opened.push(day);
-        closeModal();
-        save().then(()=>{update();renderCalendar();renderGallery();});
+photoInput.onchange=()=>{
+  selectedFile=photoInput.files[0];
+  if(selectedFile){
+    saveBtn.disabled=false;
+    saveBtn.classList.add("enabled");
+  }
+};
+
+saveBtn.onclick=()=>{
+  if(!selectedFile||!currentDay)return;
+  const ref=storage.ref(`adviento/${id}/day${currentDay}.jpg`);
+  ref.put(selectedFile).then(()=>{
+    ref.getDownloadURL().then(url=>{
+      photos[currentDay]=url;
+      opened.push(currentDay);
+      closeModal();
+      save().then(()=>{
+        update(); renderCalendar(); renderGallery();
       });
     });
-  };
-}
+  });
+};
 
 function renderGallery(){
   const days=Object.keys(photos);
