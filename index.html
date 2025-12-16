@@ -3,108 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento 🎄</title>
-
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Calendario de Adviento</title>
 
 <style>
 :root{
   --pink:#f6c1d1;
   --lav:#e7c6ff;
   --mint:#c1e1dc;
-  --beige:#fff4c1;
   --accent:#ff7a8a;
   --text:#5b3c3c;
 }
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint),var(--beige));
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint));
   color:var(--text);
 }
-.app{
-  max-width:720px;
-  margin:auto;
-  padding:20px;
-  text-align:center;
-}
-h1{color:#c2185b}
+.app{max-width:900px;margin:auto;padding:20px;text-align:center}
+h1{color:#d81b60}
 
-/* 🎄 ARBOLITO */
-#tree{
-  font-size:64px;
-  position:relative;
-  margin:10px auto 20px;
-  width:80px;
-}
-.light{
-  position:absolute;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  animation:blink 1.2s infinite alternate;
-}
-.red{background:#ff5252; top:20px; left:30px}
-.yellow{background:#ffd740; top:35px; left:45px; animation-delay:.3s}
-.blue{background:#40c4ff; top:45px; left:25px; animation-delay:.6s}
-.green{background:#69f0ae; top:30px; left:15px; animation-delay:.9s}
-@keyframes blink{0%{opacity:.2}100%{opacity:1}}
-
-/* ❤️ PROGRESO */
-#progressBox{
+/* PROGRESS */
+.progressBox{
   background:#fff;
-  padding:16px;
   border-radius:20px;
+  padding:12px;
   margin:20px 0;
 }
-#progressTrack{
-  width:100%;
-  height:22px;
-  background:#fde2ea;
-  border-radius:14px;
-  overflow:hidden;
-}
-#progressFill{
-  height:100%;
-  width:0%;
+.progressBar{
+  height:16px;
   background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  transition:width .4s ease;
+  width:0%;
+  border-radius:10px;
+  transition:.3s;
 }
-.hearts{
-  font-size:14px;
-  white-space:nowrap;
-  padding-left:8px;
-  animation:floatHearts 2s linear infinite;
-}
-@keyframes floatHearts{0%{transform:translateX(0)}100%{transform:translateX(10px)}}
-#progressText{margin-top:8px;font-weight:600;color:#c2185b}
 
-/* 📅 CALENDARIO */
-#calendar{
+/* CALENDAR */
+.calendar{
   display:grid;
   grid-template-columns:repeat(6,1fr);
   gap:10px;
 }
 .day{
   background:#fff;
-  border-radius:16px;
-  padding:18px 0;
-  font-weight:700;
+  padding:16px;
+  border-radius:14px;
+  font-weight:bold;
   cursor:pointer;
 }
 .day.opened{background:#ffe3ea}
 
 /* MODAL */
-#modal{
+.modal{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.5);
   align-items:center;
   justify-content:center;
 }
@@ -113,45 +66,76 @@ h1{color:#c2185b}
   padding:25px;
   border-radius:20px;
   width:90%;
-  max-width:380px;
+  max-width:400px;
+  position:relative;
 }
-button{
-  margin-top:10px;
-  padding:12px 22px;
+.close{
+  position:absolute;
+  top:10px;
+  right:10px;
   border:none;
-  border-radius:14px;
+  background:#eee;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  font-size:18px;
+  cursor:pointer;
+}
+.saveBtn{
+  margin-top:15px;
+  padding:12px 25px;
+  border:none;
+  border-radius:20px;
   background:var(--accent);
   color:#fff;
   font-size:1rem;
 }
-#preview{
-  max-width:100%;
-  border-radius:12px;
-  margin-top:10px;
-}
 
-/* GALERÍA */
-#gallery{margin-top:35px}
-.galleryItem{
-  background:#fff;
-  border-radius:18px;
-  padding:15px;
-  margin-bottom:20px;
+/* GALLERY GRID 3x8 */
+.gallery{
+  margin-top:40px;
 }
-.galleryItem strong{display:block;margin-bottom:8px;color:#c2185b}
-.galleryItem img{max-width:100%;border-radius:14px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.card{
+  background:#fff;
+  padding:8px;
+  border-radius:12px;
+}
+.card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.card p{
+  font-size:.85rem;
+  margin:6px 0 0;
+}
 
 /* PDF */
-#pdfBtn{margin-top:30px;background:#6a1b9a}
+.pdfGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.pdfItem{
+  border:1px solid #ccc;
+  padding:6px;
+  border-radius:8px;
+  text-align:center;
+}
+.pdfItem img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+}
+.pdfItem p{font-size:10px}
 
-footer{
-  margin:30px 0;
-  font-size:1.3rem;
-  color:#c2185b;
-}
-@media(max-width:600px){
-  #calendar{grid-template-columns:repeat(4,1fr)}
-}
+button{cursor:pointer}
 </style>
 </head>
 
@@ -160,179 +144,124 @@ footer{
 
 <h1>Calendario de Adviento 🎄</h1>
 
-<div id="tree">
-  🎄
-  <span class="light red"></span>
-  <span class="light yellow"></span>
-  <span class="light blue"></span>
-  <span class="light green"></span>
+<div class="progressBox">
+  <div class="progressBar" id="bar"></div>
+  <p id="progressText">Progreso: 0%</p>
 </div>
 
-<!-- PROGRESO -->
-<div id="progressBox">
-  <div id="progressTrack">
-    <div id="progressFill">
-      <span class="hearts">❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️ ❤️</span>
-    </div>
-  </div>
-  <p id="progressText">Progreso: 0% (0/24)</p>
-</div>
+<div class="calendar" id="calendar"></div>
 
-<!-- CALENDARIO -->
-<div id="calendar"></div>
-
-<!-- MODAL -->
-<div id="modal">
+<div class="modal" id="modal">
   <div class="modalBox">
-    <h2 id="giftText"></h2>
-    <input type="file" id="photoInput" accept="image/*">
-    <img id="preview">
-    <button onclick="saveLocal()">💾 Guardar recuerdo</button>
-    <button onclick="closeModal()">Cerrar</button>
+    <button class="close" onclick="closeModal()">✖</button>
+    <h3 id="modalTitle"></h3>
+    <input type="file" id="fileInput" accept="image/*">
+    <button class="saveBtn" onclick="savePhoto()">💾 Guardar recuerdo</button>
   </div>
 </div>
 
-<!-- GALERÍA -->
-<section id="gallery">
-  <h2>Recuerdos guardados 📸</h2>
-  <div id="galleryList"></div>
-</section>
-
-<button id="pdfBtn" onclick="generatePDF()">📄 Generar PDF final</button>
-
-<footer>Te ama mucho Rodri 💙</footer>
+<div class="gallery">
+  <h2>Galería de recuerdos 📸</h2>
+  <div class="grid" id="galleryGrid"></div>
 </div>
+
+<button class="saveBtn" onclick="generarPDF()">📄 Generar PDF</button>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 const gifts=[
 "Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
 "Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
 "Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
-"Algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
+"Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
 ];
 
-let memories={};
+let data=JSON.parse(localStorage.getItem("adviento"))||{};
 let currentDay=null;
 
 const calendar=document.getElementById("calendar");
-const modal=document.getElementById("modal");
-const giftText=document.getElementById("giftText");
-const photoInput=document.getElementById("photoInput");
-const preview=document.getElementById("preview");
-const galleryList=document.getElementById("galleryList");
+const gallery=document.getElementById("galleryGrid");
 
-/* === LOCAL STORAGE === */
-function saveToStorage(){
-  localStorage.setItem("adviento_memories", JSON.stringify(memories));
-}
-function loadFromStorage(){
-  const data=localStorage.getItem("adviento_memories");
-  if(data) memories=JSON.parse(data);
-}
-
-/* CREAR CALENDARIO */
-for(let i=1;i<=24;i++){
-  const d=document.createElement("div");
-  d.className="day";
-  d.textContent=i;
-  d.onclick=()=>openDay(i);
-  calendar.appendChild(d);
+function render(){
+  calendar.innerHTML="";
+  for(let i=1;i<=24;i++){
+    const d=document.createElement("div");
+    d.className="day"+(data[i]?" opened":"");
+    d.textContent=i;
+    d.onclick=()=>openDay(i);
+    calendar.appendChild(d);
+  }
+  renderGallery();
+  updateProgress();
 }
 
 function openDay(day){
-  if(day===24){
-    const now=new Date();
-    if(now.getMonth()!==11 || now.getDate()!==24){
-      alert("El día 24 solo se abre el 24 de diciembre 🎄");
-      return;
-    }
-  }
   currentDay=day;
-  giftText.textContent=`🎁 Día ${day} – ${gifts[day-1]}`;
-  photoInput.value="";
-  preview.src="";
-  modal.style.display="flex";
+  document.getElementById("modalTitle").textContent=`Día ${day} – ${gifts[day-1]}`;
+  document.getElementById("modal").style.display="flex";
 }
 
-photoInput.onchange=()=>{
-  if(photoInput.files[0]){
-    preview.src=URL.createObjectURL(photoInput.files[0]);
-  }
-};
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
 
-function saveLocal(){
-  if(!photoInput.files[0]) return alert("Selecciona una foto");
-  const reader=new FileReader();
-  reader.onload=()=>{
-    memories[currentDay]=reader.result;
-    saveToStorage();
-    document.querySelectorAll(".day")[currentDay-1].classList.add("opened");
-    renderGallery();
-    updateProgress();
+function savePhoto(){
+  const file=document.getElementById("fileInput").files[0];
+  if(!file)return alert("Selecciona una imagen");
+  const r=new FileReader();
+  r.onload=()=>{
+    data[currentDay]={img:r.result,text:gifts[currentDay-1]};
+    localStorage.setItem("adviento",JSON.stringify(data));
     closeModal();
+    render();
   };
-  reader.readAsDataURL(photoInput.files[0]);
+  r.readAsDataURL(file);
 }
 
 function renderGallery(){
-  galleryList.innerHTML="";
-  Object.keys(memories).sort((a,b)=>a-b).forEach(d=>{
-    const div=document.createElement("div");
-    div.className="galleryItem";
-    div.innerHTML=`
-      <strong>Día ${d} – ${gifts[d-1]}</strong>
-      <img src="${memories[d]}">
-    `;
-    galleryList.appendChild(div);
+  gallery.innerHTML="";
+  Object.keys(data).sort((a,b)=>a-b).forEach(day=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<img src="${data[day].img}"><p>Día ${day} – ${data[day].text}</p>`;
+    gallery.appendChild(c);
   });
 }
 
 function updateProgress(){
-  const done=Object.keys(memories).length;
-  const percent=Math.round((done/24)*100);
-  document.getElementById("progressFill").style.width=percent+"%";
-  document.getElementById("progressText").textContent=
-    `Progreso: ${percent}% (${done}/24)`;
+  const p=Math.round(Object.keys(data).length/24*100);
+  document.getElementById("bar").style.width=p+"%";
+  document.getElementById("progressText").textContent=`Progreso: ${p}%`;
 }
 
-function closeModal(){
-  modal.style.display="none";
+/* PDF */
+function generarPDF(){
+  const pdf=document.createElement("div");
+  pdf.innerHTML=`
+    <h1 style="text-align:center">Calendario de Adviento</h1>
+    <p style="text-align:center">Un recuerdo por cada día</p>
+    <p style="text-align:center">Con amor, Rodri</p>
+    <div style="page-break-after:always"></div>
+    <div class="pdfGrid">
+      ${Object.keys(data).sort((a,b)=>a-b).map(d=>`
+        <div class="pdfItem">
+          <img src="${data[d].img}">
+          <p>Día ${d} – ${data[d].text}</p>
+        </div>`).join("")}
+    </div>
+  `;
+  document.body.appendChild(pdf);
+  html2pdf().from(pdf).set({
+    filename:"Calendario_Adviento.pdf",
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{format:"letter"}
+  }).save().then(()=>pdf.remove());
 }
 
-/* PDF CON PORTADA */
-function generatePDF(){
-  const { jsPDF } = window.jspdf;
-  const pdf=new jsPDF();
-
-  // PORTADA
-  pdf.setFontSize(22);
-  pdf.text("Calendario de Adviento 🎄",20,60);
-  pdf.setFontSize(14);
-  pdf.text("Un recuerdo por cada día",20,80);
-  pdf.text("Con amor, Rodri 💙",20,95);
-  pdf.text("Fecha: "+new Date().toLocaleDateString(),20,110);
-  pdf.addPage();
-
-  let y=10;
-  Object.keys(memories).sort((a,b)=>a-b).forEach(d=>{
-    pdf.setFontSize(12);
-    pdf.text(`Día ${d} – ${gifts[d-1]}`,10,y);
-    y+=6;
-    pdf.addImage(memories[d],"JPEG",10,y,180,100);
-    y+=110;
-    if(y>260){
-      pdf.addPage();
-      y=10;
-    }
-  });
-
-  pdf.save("Calendario_Adviento.pdf");
-}
-
-/* INIT */
-loadFromStorage();
-renderGallery();
-updateProgress();
+render();
 </script>
 </body>
 </html>
