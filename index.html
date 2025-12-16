@@ -45,6 +45,7 @@ h1{color:#d81b60}
   cursor:pointer;
 }
 .day.opened{background:#ffe3ea}
+
 #modal{
   display:none;
   position:fixed;
@@ -82,13 +83,23 @@ h1{color:#d81b60}
   color:#fff;
   font-size:1rem;
 }
+
+/* GALERÍA */
 #gallery{
-  margin-top:30px;
+  margin-top:40px;
 }
-#gallery img{
+.galleryItem{
+  background:#fff;
+  border-radius:18px;
+  padding:15px;
+  margin-bottom:20px;
+}
+.galleryItem img{
   max-width:100%;
   border-radius:15px;
+  margin-top:10px;
 }
+
 footer{
   margin:40px 0;
   font-size:1.3rem;
@@ -123,14 +134,13 @@ footer{
 
 <section id="gallery">
   <h2>Galería de recuerdos 📸</h2>
-  <img id="galleryImg">
-  <p id="galleryText"></p>
+  <div id="galleryList"></div>
 </section>
 
 <footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
 </div>
 
-<!-- 🔥 FIREBASE -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
@@ -145,8 +155,8 @@ firebase.initializeApp({
   appId: "1:889474315050:web:e755804647ecde17796453"
 });
 
-const db = firebase.firestore();
-const storage = firebase.storage();
+const db=firebase.firestore();
+const storage=firebase.storage();
 
 const gifts=[
 "Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
@@ -156,7 +166,6 @@ const gifts=[
 ];
 
 const id=new URLSearchParams(location.search).get("id")||"macy";
-
 let data={}, currentDay=0;
 
 const calendar=document.getElementById("calendar");
@@ -164,19 +173,18 @@ const modal=document.getElementById("modal");
 const giftText=document.getElementById("giftText");
 const photoInput=document.getElementById("photoInput");
 const saveBtn=document.getElementById("saveBtn");
-const galleryImg=document.getElementById("galleryImg");
-const galleryText=document.getElementById("galleryText");
+const galleryList=document.getElementById("galleryList");
 const progressBar=document.getElementById("progressBar");
 const progressText=document.getElementById("progressText");
 
-db.collection("calendars").doc(id).get().then(snap=>{
-  data=snap.exists ? snap.data() : {};
+db.collection("calendars").doc(id).get().then(s=>{
+  data=s.exists?s.data():{};
   render();
 });
 
 function render(){
   calendar.innerHTML="";
-  let opened=Object.keys(data).length;
+  const opened=Object.keys(data).length;
   progressBar.style.width=Math.round(opened/24*100)+"%";
   progressText.textContent="Progreso: "+Math.round(opened/24*100)+"%";
 
@@ -229,11 +237,17 @@ saveBtn.onclick=function(){
 };
 
 function renderGallery(){
-  const days=Object.keys(data);
-  if(!days.length)return;
-  const d=days[days.length-1];
-  galleryImg.src=data[d];
-  galleryText.textContent="Día "+d+" – "+gifts[d-1];
+  galleryList.innerHTML="";
+  const days=Object.keys(data).sort((a,b)=>a-b);
+  days.forEach(d=>{
+    const div=document.createElement("div");
+    div.className="galleryItem";
+    div.innerHTML=`
+      <strong>Día ${d} – ${gifts[d-1]}</strong>
+      <img src="${data[d]}">
+    `;
+    galleryList.appendChild(div);
+  });
 }
 </script>
 </body>
