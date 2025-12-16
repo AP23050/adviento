@@ -118,14 +118,18 @@ footer{
 
 <div id="calendar"></div>
 
-<div id="modal">
+<div id="modal" onclick="closeModal(event)">
   <div class="modalBox">
+    
+    <!-- BOTÓN CERRAR -->
+    <button class="closeBtn" onclick="forceClose()">✖</button>
+
     <div id="countdown"></div>
     <div id="giftText"></div>
     <input type="file" id="photoInput" accept="image/*">
+
   </div>
 </div>
-
 <section id="gallery">
   <h2>Galería de recuerdos 📸</h2>
   <img id="galleryImg">
