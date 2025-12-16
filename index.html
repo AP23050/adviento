@@ -80,6 +80,18 @@ body{
   width:90%;
   max-width:400px;
 }
+.closeBtn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  border:none;
+  background:#eee;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  font-size:18px;
+  cursor:pointer;
+}
 #countdown{font-size:3rem;color:#d81b60}
 #giftText{font-size:1.3rem;margin:10px 0}
 #gallery{display:none;margin-top:30px}
@@ -214,7 +226,15 @@ async function load(){
 function save(){
   return db.collection("calendars").doc(id).update({opened,photos});
 }
+function forceClose(){
+  modal.style.display="none";
+}
 
+function closeModal(e){
+  if(e.target.id==="modal"){
+    modal.style.display="none";
+  }
+}
 /* ===== PROGRESS ===== */
 function update(){
   const p=Math.round(opened.length/24*100);
