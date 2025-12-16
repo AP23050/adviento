@@ -6,11 +6,18 @@
 <title>Calendario de Adviento</title>
 
 <style>
+:root{
+  --pink:#f6c1d1;
+  --lav:#e7c6ff;
+  --mint:#c1e1dc;
+  --accent:#ff7a8a;
+  --text:#5b3c3c;
+}
 body{
   margin:0;
   font-family:Arial,sans-serif;
-  background:linear-gradient(135deg,#f6c1d1,#e7c6ff,#c1e1dc);
-  color:#5b3c3c;
+  background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint));
+  color:var(--text);
 }
 .app{max-width:900px;margin:auto;padding:20px;text-align:center}
 h1{color:#d81b60}
@@ -27,6 +34,7 @@ h1{color:#d81b60}
   background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
   width:0%;
   border-radius:10px;
+  transition:.3s;
 }
 
 /* CALENDARIO */
@@ -77,7 +85,7 @@ h1{color:#d81b60}
   padding:12px 25px;
   border:none;
   border-radius:20px;
-  background:#ff7a8a;
+  background:var(--accent);
   color:#fff;
   font-size:1rem;
 }
@@ -117,7 +125,7 @@ h1{color:#d81b60}
 <body>
 <div class="app">
 
-<h1>Calendario de Adviento 🎄</h1>
+<h1>Calendario de Adviento</h1>
 
 <div class="progressBox">
   <div class="progressBar" id="bar"></div>
@@ -142,93 +150,4 @@ h1{color:#d81b60}
   <div class="grid" id="galleryGrid"></div>
 </div>
 
-</div>
-
-<script>
-const gifts=[
-"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
-"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
-"Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
-"Algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
-];
-
-let data = JSON.parse(localStorage.getItem("adviento")) || {};
-let currentDay = null;
-
-const calendar = document.getElementById("calendar");
-const gallery = document.getElementById("galleryGrid");
-const modal = document.getElementById("modal");
-const modalTitle = document.getElementById("modalTitle");
-const fileContainer = document.getElementById("fileContainer");
-
-function render(){
-  calendar.innerHTML="";
-  for(let i=1;i<=24;i++){
-    const d=document.createElement("div");
-    d.className="day"+(data[i]?" opened":"");
-    d.textContent=i;
-    d.onclick=()=>openDay(i);
-    calendar.appendChild(d);
-  }
-  renderGallery();
-  updateProgress();
-}
-
-function openDay(day){
-  currentDay = day;
-  modalTitle.textContent = `Día ${day} – ${gifts[day-1]}`;
-
-  // 🔥 CLONAR INPUT FILE (SOLUCIÓN)
-  fileContainer.innerHTML="";
-  const input=document.createElement("input");
-  input.type="file";
-  input.accept="image/*";
-  input.id="photoInput";
-  fileContainer.appendChild(input);
-
-  modal.style.display="flex";
-}
-
-function closeModal(){
-  modal.style.display="none";
-}
-
-function savePhoto(){
-  const input=document.getElementById("photoInput");
-  if(!input || !input.files[0]){
-    alert("Selecciona una imagen");
-    return;
-  }
-  const reader=new FileReader();
-  reader.onload=()=>{
-    data[currentDay]={img:reader.result,text:gifts[currentDay-1]};
-    localStorage.setItem("adviento",JSON.stringify(data));
-    closeModal();
-    render();
-  };
-  reader.readAsDataURL(input.files[0]);
-}
-
-function renderGallery(){
-  gallery.innerHTML="";
-  Object.keys(data).sort((a,b)=>a-b).forEach(day=>{
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`
-      <img src="${data[day].img}">
-      <p>Día ${day} – ${data[day].text}</p>
-    `;
-    gallery.appendChild(c);
-  });
-}
-
-function updateProgress(){
-  const p=Math.round(Object.keys(data).length/24*100);
-  document.getElementById("bar").style.width=p+"%";
-  document.getElementById("progressText").textContent=`Progreso: ${p}%`;
-}
-
-render();
-</script>
-</body>
-</html>
+<button class="saveBtn
