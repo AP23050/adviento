@@ -3,166 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento</title>
+<title>Calendario de Adviento de Macy</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f8bbd0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Adviento">
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <style>
 :root{
-  --pink:#f8bbd0;
-  --lav:#e1bee7;
-  --mint:#b2dfdb;
-  --beige:#fff9c4;
-  --accent:#ff8a65;
-  --text:#5d4e37;
+  --pink:#f8bbd0;--lav:#e1bee7;--mint:#b2dfdb;--beige:#fff9c4;
+  --accent:#ff8a65;--text:#5d4e37;
 }
 *{box-sizing:border-box}
 body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  margin:0;font-family:-apple-system;
   background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint),var(--beige));
-  color:var(--text);
-  min-height:100vh;
+  color:var(--text);min-height:100vh;
 }
-.app{
-  max-width:720px;
-  margin:auto;
-  padding:20px;
-  text-align:center;
-}
-
-/* WELCOME */
+.app{max-width:720px;margin:auto;padding:20px;text-align:center}
 #welcome{margin-top:15vh}
 #welcome h1{font-size:2.2rem;color:#e91e63}
-#welcome button{
-  margin-top:30px;
-  padding:16px 40px;
-  font-size:1.2rem;
-  border:none;border-radius:30px;
-  background:var(--accent);color:#fff;
-}
-
-/* PROGRESS */
-#progressBox{
-  display:none;
-  background:#fff;
-  padding:15px;
-  border-radius:20px;
-  margin:20px 0;
-}
-#progressBar{
-  height:18px;
-  border-radius:10px;
-  background:var(--accent);
-  width:0%;
-  transition:.4s;
-}
-
-/* CALENDAR */
-#calendar{
-  display:none;
-  display:grid;
-  grid-template-columns:repeat(6,1fr);
-  gap:10px;
-}
-.day{
-  background:#fff;
-  border-radius:16px;
-  padding:18px 0;
-  font-weight:700;
-}
+#welcome button{margin-top:30px;padding:16px 40px;border:none;border-radius:30px;background:var(--accent);color:#fff}
+#progressBox{display:none;background:#fff;padding:15px;border-radius:20px;margin:20px 0}
+#progressBar{height:18px;border-radius:10px;background:var(--accent);width:0%;transition:.4s}
+#calendar{display:none;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.day{background:#fff;border-radius:16px;padding:18px 0;font-weight:700}
 .day.opened{background:#ffe0e0}
-
-/* MODAL */
-#modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.5);
-  align-items:center;
-  justify-content:center;
-}
-.modalBox{
-  background:#fff;
-  padding:25px;
-  border-radius:20px;
-  width:90%;
-  max-width:400px;
-}
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
+.modalBox{background:#fff;padding:25px;border-radius:20px;width:90%;max-width:400px}
 #countdown{font-size:3rem}
 #giftText{font-size:1.3rem;margin:10px 0}
-
-/* GALLERY */
 #gallery{display:none;margin-top:30px}
 #gallery img{max-width:100%;border-radius:15px}
-.galleryNav button{
-  margin:10px;
-  padding:10px 20px;
-  border:none;border-radius:12px;
-  background:var(--accent);color:#fff;
-}
-
-/* FOOTER */
-footer{
-  margin:40px 0 10px;
-  font-size:1.4rem;
-  color:#e91e63;
-}
-
-@media(max-width:600px){
-  #calendar{grid-template-columns:repeat(4,1fr)}
-}
+.galleryNav button{margin:10px;padding:10px 20px;border:none;border-radius:12px;background:var(--accent);color:#fff}
+footer{margin:40px 0 10px;font-size:1.4rem;color:#e91e63}
+@media(max-width:600px){#calendar{grid-template-columns:repeat(4,1fr)}}
 </style>
-</head>
 
-<body>
-<div class="app">
+<!-- 🔥 FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-<!-- WELCOME -->
-<section id="welcome">
-  <h1>Calendario de Adviento 🎁</h1>
-  <p>Un regalo por día, con amor</p>
-  <button id="startBtn">Iniciamos</button>
-</section>
+const firebaseConfig = {
+  apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
+  authDomain: "adviento-b07ca.firebaseapp.com",
+  projectId: "adviento-b07ca",
+  storageBucket: "adviento-b07ca.appspot.com",
+  messagingSenderId: "889474315050",
+  appId: "1:889474315050:web:e755804647ecde17796453"
+};
 
-<!-- PROGRESS -->
-<div id="progressBox">
-  <div id="progressBar"></div>
-  <p id="progressText">Progreso: 0%</p>
-</div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-<!-- CALENDAR -->
-<div id="calendar"></div>
-
-<!-- MODAL -->
-<div id="modal">
-  <div class="modalBox">
-    <div id="countdown"></div>
-    <div id="giftText"></div>
-    <input type="file" id="photoInput" accept="image/*">
-  </div>
-</div>
-
-<!-- GALLERY -->
-<section id="gallery">
-  <h2>Galería de recuerdos 📸</h2>
-  <img id="galleryImg">
-  <p id="galleryText"></p>
-  <div class="galleryNav">
-    <button onclick="prev()">Anterior</button>
-    <button onclick="next()">Siguiente</button>
-  </div>
-</section>
-
-<footer>Te ama mucho Rodri ❤️</footer>
-</div>
-
-<script>
 /* ===== DATA ===== */
 const gifts=[
 "Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
@@ -170,6 +67,7 @@ const gifts=[
 "Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
 "Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
 ];
+
 const id=new URLSearchParams(location.search).get("id")||"default";
 let opened=[], photos={}, galleryIndex=0;
 
@@ -198,18 +96,21 @@ startBtn.onclick=()=>{
 };
 
 /* ===== LOAD ===== */
-function load(){
-  opened=JSON.parse(localStorage.getItem("od_"+id)||"[]");
-  photos=JSON.parse(localStorage.getItem("ph_"+id)||"{}");
-  update();
-  renderCalendar();
-  renderGallery();
+async function load(){
+  const refDoc=doc(db,"calendars",id);
+  const snap=await getDoc(refDoc);
+  if(snap.exists()){
+    opened=snap.data().opened||[];
+    photos=snap.data().photos||{};
+  }else{
+    await setDoc(refDoc,{opened:[],photos:{}});
+  }
+  update(); renderCalendar(); renderGallery();
 }
 
 /* ===== SAVE ===== */
-function save(){
-  localStorage.setItem("od_"+id,JSON.stringify(opened));
-  localStorage.setItem("ph_"+id,JSON.stringify(photos));
+async function save(){
+  await updateDoc(doc(db,"calendars",id),{opened,photos});
 }
 
 /* ===== PROGRESS ===== */
@@ -234,33 +135,26 @@ function renderCalendar(){
 /* ===== OPEN DAY ===== */
 function openDay(day){
   if(opened.includes(day))return;
-  if(day!==opened.length+1){
-    alert("Aún no puedes abrir este día");
-    return;
-  }
+  if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
   modal.style.display="flex";
   giftText.textContent="";
   countdown.textContent="3";
   let c=3;
   const t=setInterval(()=>{
-    c--;
-    countdown.textContent=c>0?c:"🎁";
-    if(c===0){
-      clearInterval(t);
-      giftText.textContent=gifts[day-1];
-    }
+    c--; countdown.textContent=c>0?c:"🎁";
+    if(c===0){clearInterval(t); giftText.textContent=gifts[day-1];}
   },700);
 
   photoInput.value="";
-  photoInput.onchange=()=>{
-    const r=new FileReader();
-    r.onload=()=>{
-      photos[day]=r.result;
-      opened.push(day);
-      modal.style.display="none";
-      save(); update(); renderCalendar(); renderGallery();
-    };
-    r.readAsDataURL(photoInput.files[0]);
+  photoInput.onchange=async()=>{
+    const file=photoInput.files[0];
+    const storageRef=ref(storage,`adviento/${id}/day${day}.jpg`);
+    await uploadBytes(storageRef,file);
+    const url=await getDownloadURL(storageRef);
+    photos[day]=url;
+    opened.push(day);
+    modal.style.display="none";
+    await save(); update(); renderCalendar(); renderGallery();
   };
 }
 
@@ -273,13 +167,46 @@ function renderGallery(){
   galleryImg.src=photos[d];
   galleryText.textContent="Día "+d+" – "+gifts[d-1];
 }
-function prev(){galleryIndex--; if(galleryIndex<0)galleryIndex=0; renderGallery();}
-function next(){galleryIndex++; renderGallery();}
-
-/* ===== SERVICE WORKER ===== */
-if("serviceWorker"in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
+window.prev=()=>{galleryIndex=Math.max(0,galleryIndex-1);renderGallery();}
+window.next=()=>{galleryIndex++;renderGallery();}
 </script>
+</head>
+
+<body>
+<div class="app">
+
+<section id="welcome">
+  <h1>Calendario de Adviento de Macy 🎁</h1>
+  <p>Un regalo por día, con amor de Rodri</p>
+  <button id="startBtn">Iniciamos</button>
+</section>
+
+<div id="progressBox">
+  <div id="progressBar"></div>
+  <p id="progressText">Progreso: 0%</p>
+</div>
+
+<div id="calendar"></div>
+
+<div id="modal">
+  <div class="modalBox">
+    <div id="countdown"></div>
+    <div id="giftText"></div>
+    <input type="file" id="photoInput" accept="image/*">
+  </div>
+</div>
+
+<section id="gallery">
+  <h2>Galería de recuerdos 📸</h2>
+  <img id="galleryImg">
+  <p id="galleryText"></p>
+  <div class="galleryNav">
+    <button onclick="prev()">Anterior</button>
+    <button onclick="next()">Siguiente</button>
+  </div>
+</section>
+
+<footer>Te ama mucho Rodri, mi amor macy 💙</footer>
+</div>
 </body>
 </html>
