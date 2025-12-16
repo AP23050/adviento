@@ -3,26 +3,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎁 Calendario de Adviento para Macy 🎁</title>
+<title>🎁 Calendario de Adviento 🎄</title>
 
 <style>
-:root{
-  --pink:#f6c1d1;
-  --lav:#e7c6ff;
-  --mint:#c1e1dc;
-  --beige:#fff4c1;
-  --accent:#ff7a8a;
-  --text:#5b3c3c;
-}
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint),var(--beige));
-  color:var(--text);
+  font-family:system-ui, sans-serif;
+  background:linear-gradient(135deg,#f6c1d1,#e7c6ff,#c1e1dc,#fff4c1);
+  min-height:100vh;
+  color:#5b3c3c;
 }
-.app{max-width:720px;margin:auto;padding:20px;text-align:center}
-#calendar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.app{
+  max-width:720px;
+  margin:auto;
+  padding:20px;
+  text-align:center;
+}
+h1{color:#d81b60}
+#progressBox{
+  background:#fff;
+  padding:15px;
+  border-radius:20px;
+  margin:20px 0;
+}
+#progressBar{
+  height:18px;
+  border-radius:10px;
+  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
+  width:0%;
+}
+#calendar{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
 .day{
-  background:#fff;border-radius:16px;padding:18px;font-weight:700;
+  background:#fff;
+  border-radius:16px;
+  padding:18px 0;
+  font-weight:700;
+  cursor:pointer;
 }
-.day.opened{background:#ffe3ea
+.day.opened{background:#ffe3ea}
+#modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  align-items:center;
+  justify-content:center;
+}
+.modalBox{
+  background:#fff;
+  padding:25px;
+  border-radius:20px;
+  width:90%;
+  max-width:400px;
+  position:relative;
+}
+.closeBtn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  border:none;
+  background:#eee;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  font-size:18px;
+}
+#giftText{font-size:1.3rem;margin:15px 0}
+#saveBtn{
+  margin-top:15px;
+  padding:12px 25px;
+  border:none;
+  border-radius:15px;
+  background:#ff7a8a;
+  color:#fff;
+  font-size:1rem;
+}
+#gallery{
+  margin-top:30px;
+}
+#gallery img{
+  max-width:100%;
+  border-radius:15px;
+}
+footer{
+  margin:40px 0;
+  font-size:1.3rem;
+  color:#d81b60;
+}
+@media(max-width:600px){
+  #calendar{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<h1>Calendario de Adviento 🎄</h1>
+
+<div id="progressBox">
+  <div id="progressBar"></div>
+  <p id="progressText">Progreso: 0%</p>
+</div>
+
+<div id="calendar"></div>
+
+<div id="modal">
+  <div class="modalBox">
+    <button class="closeBtn" onclick="closeModal()">✖</button>
+    <div id="giftText"></div>
+    <input type="file" id="photoInput" accept="image/*">
+    <br>
+    <button id="saveBtn">💾 Guardar recuerdo</button>
+  </div>
+</div>
+
+<section id="gallery">
+  <h2>Galería de recuerdos 📸</h2>
+  <img id="galleryImg">
+  <p id="galleryText"></p>
+</section>
+
+<footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
+</div>
+
+<!-- 🔥 FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
+  authDomain: "adviento-b07ca.firebaseapp.com",
+  projectId: "adviento-b07ca",
+  storageBucket: "adviento-b07ca.appspot.com",
+  messagingSenderId: "889474315050",
+  appId: "1:889474315050:web:e755804647ecde17796453"
+});
+
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+const gifts=[
+"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
+"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
+"Tosty / Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
+"Algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","CK Euphoria"
+];
+
+const id=new URLSearchParams(location.search).get("id")||"macy";
+
+let data={}, currentDay=0;
+
+const calendar=document.getElementById("calendar");
+const modal=document.getElementById("modal");
+const giftText=document.getElementById("giftText");
+const photoInput=document.getElementById("photoInput");
+const saveBtn=document.getElementById("saveBtn");
+const galleryImg=document.getElementById("galleryImg");
+const galleryText=document.getElementById("galleryText");
+const progressBar=document.getElementById("progressBar");
+const progressText=document.getElementById("progressText");
+
+db.collection("calendars").doc(id).get().then(snap=>{
+  data=snap.exists ? snap.data() : {};
+  render();
+});
+
+function render(){
+  calendar.innerHTML="";
+  let opened=Object.keys(data).length;
+  progressBar.style.width=Math.round(opened/24*100)+"%";
+  progressText.textContent="Progreso: "+Math.round(opened/24*100)+"%";
+
+  for(let i=1;i<=24;i++){
+    const d=document.createElement("div");
+    d.className="day"+(data[i]?" opened":"");
+    d.textContent=i;
+    d.onclick=()=>openDay(i);
+    calendar.appendChild(d);
+  }
+  renderGallery();
+}
+
+function openDay(day){
+  if(day===24){
+    const today=new Date();
+    const allowed=new Date(2025,11,24);
+    if(today<allowed){
+      alert("El día 24 solo se puede subir el 24 de diciembre de 2025 🎄");
+      return;
+    }
+  }
+  currentDay=day;
+  giftText.textContent="🎁 "+gifts[day-1];
+  modal.style.display="flex";
+}
+
+function closeModal(){
+  modal.style.display="none";
+  photoInput.value="";
+}
+
+saveBtn.onclick=function(){
+  if(!photoInput.files[0]){
+    alert("Selecciona una foto");
+    return;
+  }
+  const file=photoInput.files[0];
+  const ref=storage.ref("adviento/"+id+"/day"+currentDay+".jpg");
+
+  ref.put(file).then(()=>{
+    ref.getDownloadURL().then(url=>{
+      data[currentDay]=url;
+      db.collection("calendars").doc(id).set(data).then(()=>{
+        closeModal();
+        render();
+      });
+    });
+  });
+};
+
+function renderGallery(){
+  const days=Object.keys(data);
+  if(!days.length)return;
+  const d=days[days.length-1];
+  galleryImg.src=data[d];
+  galleryText.textContent="Día "+d+" – "+gifts[d-1];
+}
+</script>
+</body>
+</html>
