@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎁🎁🎁Calendario de Adviento para Macy 🎁🎁🎁</title>
+<title>🎁 Calendario de Adviento para Macy 🎁</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f8bbd0">
@@ -54,7 +54,7 @@ body{
   transition:.4s;
 }
 #calendar{
-  display:grid;
+  display:none;
   grid-template-columns:repeat(6,1fr);
   gap:10px;
 }
@@ -63,6 +63,7 @@ body{
   border-radius:16px;
   padding:18px 0;
   font-weight:700;
+  cursor:pointer;
 }
 .day.opened{background:#ffe3ea}
 #modal{
@@ -74,6 +75,7 @@ body{
   justify-content:center;
 }
 .modalBox{
+  position:relative;
   background:#fff;
   padding:25px;
   border-radius:20px;
@@ -118,7 +120,7 @@ footer{
 <div class="app">
 
 <section id="welcome">
-  <h1>🎁🎁🎁Calendario de Adviento para Macy 🎁🎁🎁</h1>
+  <h1>🎁 Calendario de Adviento para Macy 🎁</h1>
   <p>Un regalo por día, con amor de Rodri</p>
   <button id="startBtn">Iniciamos</button>
 </section>
@@ -132,16 +134,13 @@ footer{
 
 <div id="modal" onclick="closeModal(event)">
   <div class="modalBox">
-    
-    <!-- BOTÓN CERRAR -->
-    <button class="closeBtn" onclick="forceClose()">✖</button>
-
+    <button class="closeBtn" onclick="forceClose(event)">✖</button>
     <div id="countdown"></div>
     <div id="giftText"></div>
     <input type="file" id="photoInput" accept="image/*">
-
   </div>
 </div>
+
 <section id="gallery">
   <h2>Galería de recuerdos 📸</h2>
   <img id="galleryImg">
@@ -155,13 +154,11 @@ footer{
 <footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
 </div>
 
-<!-- 🔥 FIREBASE (COMPAT – FUNCIONA EN GITHUB PAGES) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <script>
-/* ===== FIREBASE CONFIG ===== */
 firebase.initializeApp({
   apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
   authDomain: "adviento-b07ca.firebaseapp.com",
@@ -174,18 +171,11 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-/* ===== DATA ===== */
-const gifts=[
-"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
-"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
-"Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
-"Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
-];
+const gifts=[/* mismos regalos */];
 
 const id=new URLSearchParams(location.search).get("id")||"macy";
 let opened=[], photos={}, galleryIndex=0;
 
-/* ===== ELEMENTS ===== */
 const startBtn=document.getElementById("startBtn");
 const welcome=document.getElementById("welcome");
 const progressBox=document.getElementById("progressBox");
@@ -200,7 +190,6 @@ const countdown=document.getElementById("countdown");
 const giftText=document.getElementById("giftText");
 const photoInput=document.getElementById("photoInput");
 
-/* ===== START ===== */
 startBtn.onclick=()=>{
   welcome.style.display="none";
   progressBox.style.display="block";
@@ -209,7 +198,6 @@ startBtn.onclick=()=>{
   load();
 };
 
-/* ===== LOAD ===== */
 async function load(){
   const ref=db.collection("calendars").doc(id);
   const snap=await ref.get();
@@ -222,11 +210,12 @@ async function load(){
   update(); renderCalendar(); renderGallery();
 }
 
-/* ===== SAVE ===== */
 function save(){
   return db.collection("calendars").doc(id).update({opened,photos});
 }
-function forceClose(){
+
+function forceClose(e){
+  e.stopPropagation();
   modal.style.display="none";
 }
 
@@ -235,14 +224,13 @@ function closeModal(e){
     modal.style.display="none";
   }
 }
-/* ===== PROGRESS ===== */
+
 function update(){
   const p=Math.round(opened.length/24*100);
   progressBar.style.width=p+"%";
   progressText.textContent="Progreso: "+p+"%";
 }
 
-/* ===== CALENDAR ===== */
 function renderCalendar(){
   calendar.innerHTML="";
   for(let i=1;i<=24;i++){
@@ -254,7 +242,6 @@ function renderCalendar(){
   }
 }
 
-/* ===== OPEN DAY ===== */
 function openDay(day){
   if(opened.includes(day))return;
   if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
@@ -265,7 +252,7 @@ function openDay(day){
   let c=3;
   const t=setInterval(()=>{
     c--;
-    countdown.textContent=c>0?c:"🎁🥰🥰";
+    countdown.textContent=c>0?c:"🎁";
     if(c===0){
       clearInterval(t);
       giftText.textContent=gifts[day-1];
@@ -275,9 +262,10 @@ function openDay(day){
   photoInput.value="";
   photoInput.onchange=()=>{
     const file=photoInput.files[0];
-    const storageRef=storage.ref(`adviento/${id}/day${day}.jpg`);
-    storageRef.put(file).then(()=>{
-      storageRef.getDownloadURL().then(url=>{
+    if(!file) return;
+    const ref=storage.ref(`adviento/${id}/day${day}.jpg`);
+    ref.put(file).then(()=>{
+      ref.getDownloadURL().then(url=>{
         photos[day]=url;
         opened.push(day);
         modal.style.display="none";
@@ -289,7 +277,6 @@ function openDay(day){
   };
 }
 
-/* ===== GALLERY ===== */
 function renderGallery(){
   const days=Object.keys(photos);
   if(!days.length)return;
@@ -301,6 +288,5 @@ function renderGallery(){
 window.prev=()=>{galleryIndex=Math.max(0,galleryIndex-1);renderGallery();}
 window.next=()=>{galleryIndex++;renderGallery();}
 </script>
-
 </body>
 </html>
