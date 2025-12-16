@@ -22,53 +22,30 @@ body{
 }
 
 .app{
-  max-width:800px;
+  max-width:820px;
   margin:auto;
   padding:20px;
   text-align:center;
 }
 
-/* PORTADA */
-.cover{
-  margin-top:40px;
-}
-.cover h1{
-  font-size:2.5rem;
-  color:#d81b60;
-}
-.cover p{
-  font-size:1.1rem;
-}
-.cover button{
-  margin-top:25px;
-  padding:15px 40px;
-  border:none;
-  border-radius:30px;
-  background:var(--accent);
-  color:#fff;
-  font-size:1.1rem;
+h1{color:#d81b60}
+
+button{
+  cursor:pointer;
 }
 
 /* PROGRESO */
 .progressBox{
-  display:none;
   background:#fff;
   padding:20px;
   border-radius:20px;
-  margin:30px 0;
+  margin:20px 0;
 }
-.hearts{
-  font-size:1.5rem;
-  margin-bottom:10px;
-}
-.progressText{
-  font-weight:bold;
-}
+.hearts{font-size:1.6rem}
+.progressText{font-weight:bold}
 
 /* CALENDARIO */
 #calendar{
-  display:none;
-  margin-top:30px;
   display:grid;
   grid-template-columns:repeat(6,1fr);
   gap:12px;
@@ -78,11 +55,8 @@ body{
   border-radius:16px;
   padding:18px 0;
   font-weight:700;
-  cursor:pointer;
 }
-.day.saved{
-  background:#ffe3ea;
-}
+.day.saved{background:#ffe3ea}
 
 /* MODAL */
 #modal{
@@ -99,7 +73,7 @@ body{
   padding:25px;
   border-radius:20px;
   width:90%;
-  max-width:400px;
+  max-width:420px;
   position:relative;
 }
 .closeBtn{
@@ -111,37 +85,33 @@ body{
   border-radius:50%;
   width:32px;
   height:32px;
-  font-size:18px;
 }
 .saveBtn{
   margin-top:15px;
-  padding:12px 25px;
+  padding:12px 30px;
   border:none;
   border-radius:20px;
   background:var(--accent);
   color:#fff;
-  font-size:1rem;
 }
 
 /* GALERÍA */
-#gallery{
-  display:none;
-  margin-top:40px;
-}
 .galleryGrid{
+  margin-top:30px;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
 .galleryItem{
   background:#fff;
-  border-radius:15px;
   padding:10px;
+  border-radius:15px;
 }
 .galleryItem img{
   width:100%;
   border-radius:10px;
 }
+
 footer{
   margin:40px 0;
   font-size:1.4rem;
@@ -157,20 +127,16 @@ footer{
 <body>
 <div class="app">
 
-<div class="cover" id="cover">
-  <h1>Calendario de Adviento 🎄</h1>
-  <p>Un recuerdo por cada día</p>
-  <button onclick="start()">Comenzar</button>
+<h1>Calendario de Adviento 🎄</h1>
+
+<div class="progressBox">
+  <div class="hearts" id="hearts"></div>
+  <div class="progressText" id="progressText"></div>
 </div>
 
-<div class="progressBox" id="progressBox">
-  <div class="hearts" id="hearts">🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍</div>
-  <div class="progressText" id="progressText">Progreso: 0%</div>
-</div>
-
-<h2 id="calendarTitle" style="display:none">Calendario 🎁</h2>
 <div id="calendar"></div>
 
+<!-- MODAL -->
 <div id="modal">
   <div class="modalBox">
     <button class="closeBtn" onclick="closeModal()">✖</button>
@@ -181,10 +147,8 @@ footer{
   </div>
 </div>
 
-<section id="gallery">
-  <h2>Galería de recuerdos 📸</h2>
-  <div class="galleryGrid" id="galleryGrid"></div>
-</section>
+<h2>Galería de recuerdos 📸</h2>
+<div class="galleryGrid" id="galleryGrid"></div>
 
 <footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
 
@@ -199,18 +163,12 @@ const gifts=[
 ];
 
 let currentDay=null;
-let data=JSON.parse(localStorage.getItem("adviento"))||{};
+let data=JSON.parse(localStorage.getItem("advientoData")) || {};
 
-function start(){
-  document.getElementById("cover").style.display="none";
-  document.getElementById("progressBox").style.display="block";
-  document.getElementById("calendar").style.display="grid";
-  document.getElementById("calendarTitle").style.display="block";
-  document.getElementById("gallery").style.display="block";
-  renderCalendar();
-  renderGallery();
-  updateProgress();
-}
+// INIT
+renderCalendar();
+renderGallery();
+updateProgress();
 
 function renderCalendar(){
   const cal=document.getElementById("calendar");
@@ -244,36 +202,50 @@ function closeModal(){
 }
 
 function savePhoto(){
-  const file=document.getElementById("photoInput").files[0];
-  if(!file){alert("Selecciona una foto");return;}
+  if(currentDay===null)return;
+
+  const input=document.getElementById("photoInput");
+  if(!input.files.length){
+    alert("Selecciona una foto");
+    return;
+  }
+
   const reader=new FileReader();
   reader.onload=e=>{
-    data[currentDay]={img:e.target.result,text:gifts[currentDay-1]};
-    localStorage.setItem("adviento",JSON.stringify(data));
+    data[String(currentDay)] = {
+      img: e.target.result,
+      text: gifts[currentDay-1]
+    };
+
+    localStorage.setItem("advientoData", JSON.stringify(data));
+
     closeModal();
     renderCalendar();
     renderGallery();
     updateProgress();
   };
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(input.files[0]);
 }
 
 function renderGallery(){
   const grid=document.getElementById("galleryGrid");
   grid.innerHTML="";
-  Object.keys(data).forEach(d=>{
+  Object.keys(data).sort((a,b)=>a-b).forEach(d=>{
     const item=document.createElement("div");
     item.className="galleryItem";
-    item.innerHTML=`<img src="${data[d].img}"><p>Día ${d} – ${data[d].text}</p>`;
+    item.innerHTML=`
+      <img src="${data[d].img}">
+      <p>Día ${d} – ${data[d].text}</p>
+    `;
     grid.appendChild(item);
   });
 }
 
 function updateProgress(){
   const saved=Object.keys(data).length;
-  const percent=Math.round(saved/24*100);
-  document.getElementById("progressText").textContent=`Progreso: ${percent}%`;
-  document.getElementById("hearts").textContent="❤️".repeat(saved)+"🤍".repeat(24-saved);
+  document.getElementById("progressText").textContent=`Progreso: ${Math.round(saved/24*100)}%`;
+  document.getElementById("hearts").textContent=
+    "❤️".repeat(saved)+"🤍".repeat(24-saved);
 }
 </script>
 </body>
