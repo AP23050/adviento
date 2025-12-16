@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento de Macy</title>
+<title>🎁🎁🎁Calendario de Adviento para Macy 🎁🎁🎁</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f8bbd0">
@@ -12,171 +12,102 @@
 
 <style>
 :root{
-  --pink:#f8bbd0;--lav:#e1bee7;--mint:#b2dfdb;--beige:#fff9c4;
-  --accent:#ff8a65;--text:#5d4e37;
+  --pink:#f6c1d1;
+  --lav:#e7c6ff;
+  --mint:#c1e1dc;
+  --beige:#fff4c1;
+  --accent:#ff7a8a;
+  --text:#5b3c3c;
 }
 *{box-sizing:border-box}
 body{
-  margin:0;font-family:-apple-system;
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint),var(--beige));
-  color:var(--text);min-height:100vh;
+  color:var(--text);
+  min-height:100vh;
 }
 .app{max-width:720px;margin:auto;padding:20px;text-align:center}
 #welcome{margin-top:15vh}
-#welcome h1{font-size:2.2rem;color:#e91e63}
-#welcome button{margin-top:30px;padding:16px 40px;border:none;border-radius:30px;background:var(--accent);color:#fff}
-#progressBox{display:none;background:#fff;padding:15px;border-radius:20px;margin:20px 0}
-#progressBar{height:18px;border-radius:10px;background:var(--accent);width:0%;transition:.4s}
-#calendar{display:none;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.day{background:#fff;border-radius:16px;padding:18px 0;font-weight:700}
-.day.opened{background:#ffe0e0}
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
-.modalBox{background:#fff;padding:25px;border-radius:20px;width:90%;max-width:400px}
-#countdown{font-size:3rem}
+#welcome h1{font-size:2.3rem;color:#d81b60}
+#welcome p{font-size:1.05rem}
+#welcome button{
+  margin-top:28px;
+  padding:16px 42px;
+  font-size:1.15rem;
+  border:none;border-radius:30px;
+  background:var(--accent);
+  color:#fff;
+}
+#progressBox{
+  display:none;
+  background:#fff;
+  padding:15px;
+  border-radius:20px;
+  margin:20px 0;
+}
+#progressBar{
+  height:18px;
+  border-radius:10px;
+  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
+  width:0%;
+  transition:.4s;
+}
+#calendar{
+  display:none;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+.day{
+  background:#fff;
+  border-radius:16px;
+  padding:18px 0;
+  font-weight:700;
+}
+.day.opened{background:#ffe3ea}
+#modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  align-items:center;
+  justify-content:center;
+}
+.modalBox{
+  background:#fff;
+  padding:25px;
+  border-radius:20px;
+  width:90%;
+  max-width:400px;
+}
+#countdown{font-size:3rem;color:#d81b60}
 #giftText{font-size:1.3rem;margin:10px 0}
 #gallery{display:none;margin-top:30px}
 #gallery img{max-width:100%;border-radius:15px}
-.galleryNav button{margin:10px;padding:10px 20px;border:none;border-radius:12px;background:var(--accent);color:#fff}
-footer{margin:40px 0 10px;font-size:1.4rem;color:#e91e63}
-@media(max-width:600px){#calendar{grid-template-columns:repeat(4,1fr)}}
+.galleryNav button{
+  margin:10px;
+  padding:10px 22px;
+  border:none;border-radius:12px;
+  background:var(--accent);
+  color:#fff;
+}
+footer{
+  margin:40px 0 10px;
+  font-size:1.4rem;
+  color:#d81b60;
+}
+@media(max-width:600px){
+  #calendar{grid-template-columns:repeat(4,1fr)}
+}
 </style>
-
-<!-- 🔥 FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
-  authDomain: "adviento-b07ca.firebaseapp.com",
-  projectId: "adviento-b07ca",
-  storageBucket: "adviento-b07ca.appspot.com",
-  messagingSenderId: "889474315050",
-  appId: "1:889474315050:web:e755804647ecde17796453"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-/* ===== DATA ===== */
-const gifts=[
-"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
-"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
-"Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
-"Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
-];
-
-const id=new URLSearchParams(location.search).get("id")||"default";
-let opened=[], photos={}, galleryIndex=0;
-
-/* ===== ELEMENTS ===== */
-const startBtn=document.getElementById("startBtn");
-const welcome=document.getElementById("welcome");
-const progressBox=document.getElementById("progressBox");
-const progressBar=document.getElementById("progressBar");
-const progressText=document.getElementById("progressText");
-const calendar=document.getElementById("calendar");
-const gallery=document.getElementById("gallery");
-const galleryImg=document.getElementById("galleryImg");
-const galleryText=document.getElementById("galleryText");
-const modal=document.getElementById("modal");
-const countdown=document.getElementById("countdown");
-const giftText=document.getElementById("giftText");
-const photoInput=document.getElementById("photoInput");
-
-/* ===== START ===== */
-startBtn.onclick=()=>{
-  welcome.style.display="none";
-  progressBox.style.display="block";
-  calendar.style.display="grid";
-  gallery.style.display="block";
-  load();
-};
-
-/* ===== LOAD ===== */
-async function load(){
-  const refDoc=doc(db,"calendars",id);
-  const snap=await getDoc(refDoc);
-  if(snap.exists()){
-    opened=snap.data().opened||[];
-    photos=snap.data().photos||{};
-  }else{
-    await setDoc(refDoc,{opened:[],photos:{}});
-  }
-  update(); renderCalendar(); renderGallery();
-}
-
-/* ===== SAVE ===== */
-async function save(){
-  await updateDoc(doc(db,"calendars",id),{opened,photos});
-}
-
-/* ===== PROGRESS ===== */
-function update(){
-  const p=Math.round(opened.length/24*100);
-  progressBar.style.width=p+"%";
-  progressText.textContent="Progreso: "+p+"%";
-}
-
-/* ===== CALENDAR ===== */
-function renderCalendar(){
-  calendar.innerHTML="";
-  for(let i=1;i<=24;i++){
-    const d=document.createElement("div");
-    d.className="day"+(opened.includes(i)?" opened":"");
-    d.textContent=i;
-    d.onclick=()=>openDay(i);
-    calendar.appendChild(d);
-  }
-}
-
-/* ===== OPEN DAY ===== */
-function openDay(day){
-  if(opened.includes(day))return;
-  if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
-  modal.style.display="flex";
-  giftText.textContent="";
-  countdown.textContent="3";
-  let c=3;
-  const t=setInterval(()=>{
-    c--; countdown.textContent=c>0?c:"🎁";
-    if(c===0){clearInterval(t); giftText.textContent=gifts[day-1];}
-  },700);
-
-  photoInput.value="";
-  photoInput.onchange=async()=>{
-    const file=photoInput.files[0];
-    const storageRef=ref(storage,`adviento/${id}/day${day}.jpg`);
-    await uploadBytes(storageRef,file);
-    const url=await getDownloadURL(storageRef);
-    photos[day]=url;
-    opened.push(day);
-    modal.style.display="none";
-    await save(); update(); renderCalendar(); renderGallery();
-  };
-}
-
-/* ===== GALLERY ===== */
-function renderGallery(){
-  const days=Object.keys(photos);
-  if(!days.length)return;
-  galleryIndex=Math.min(galleryIndex,days.length-1);
-  const d=days[galleryIndex];
-  galleryImg.src=photos[d];
-  galleryText.textContent="Día "+d+" – "+gifts[d-1];
-}
-window.prev=()=>{galleryIndex=Math.max(0,galleryIndex-1);renderGallery();}
-window.next=()=>{galleryIndex++;renderGallery();}
-</script>
 </head>
 
 <body>
 <div class="app">
 
 <section id="welcome">
-  <h1>Calendario de Adviento de Macy 🎁</h1>
+  <h1>🎁🎁🎁Calendario de Adviento para Macy 🎁🎁🎁</h1>
   <p>Un regalo por día, con amor de Rodri</p>
   <button id="startBtn">Iniciamos</button>
 </section>
@@ -206,7 +137,147 @@ window.next=()=>{galleryIndex++;renderGallery();}
   </div>
 </section>
 
-<footer>Te ama mucho Rodri, mi amor macy 💙</footer>
+<footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
 </div>
+
+<!-- 🔥 FIREBASE (COMPAT – FUNCIONA EN GITHUB PAGES) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+/* ===== FIREBASE CONFIG ===== */
+firebase.initializeApp({
+  apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
+  authDomain: "adviento-b07ca.firebaseapp.com",
+  projectId: "adviento-b07ca",
+  storageBucket: "adviento-b07ca.appspot.com",
+  messagingSenderId: "889474315050",
+  appId: "1:889474315050:web:e755804647ecde17796453"
+});
+
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/* ===== DATA ===== */
+const gifts=[
+"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
+"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
+"Tosty / barra Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
+"Almohadilla de algodón","Taza","Perfume Givenchy","Lipstick Revlon","Labial Givenchy","Loción CK Euphoria"
+];
+
+const id=new URLSearchParams(location.search).get("id")||"macy";
+let opened=[], photos={}, galleryIndex=0;
+
+/* ===== ELEMENTS ===== */
+const startBtn=document.getElementById("startBtn");
+const welcome=document.getElementById("welcome");
+const progressBox=document.getElementById("progressBox");
+const progressBar=document.getElementById("progressBar");
+const progressText=document.getElementById("progressText");
+const calendar=document.getElementById("calendar");
+const gallery=document.getElementById("gallery");
+const galleryImg=document.getElementById("galleryImg");
+const galleryText=document.getElementById("galleryText");
+const modal=document.getElementById("modal");
+const countdown=document.getElementById("countdown");
+const giftText=document.getElementById("giftText");
+const photoInput=document.getElementById("photoInput");
+
+/* ===== START ===== */
+startBtn.onclick=()=>{
+  welcome.style.display="none";
+  progressBox.style.display="block";
+  calendar.style.display="grid";
+  gallery.style.display="block";
+  load();
+};
+
+/* ===== LOAD ===== */
+async function load(){
+  const ref=db.collection("calendars").doc(id);
+  const snap=await ref.get();
+  if(snap.exists){
+    opened=snap.data().opened||[];
+    photos=snap.data().photos||{};
+  }else{
+    await ref.set({opened:[],photos:{}});
+  }
+  update(); renderCalendar(); renderGallery();
+}
+
+/* ===== SAVE ===== */
+function save(){
+  return db.collection("calendars").doc(id).update({opened,photos});
+}
+
+/* ===== PROGRESS ===== */
+function update(){
+  const p=Math.round(opened.length/24*100);
+  progressBar.style.width=p+"%";
+  progressText.textContent="Progreso: "+p+"%";
+}
+
+/* ===== CALENDAR ===== */
+function renderCalendar(){
+  calendar.innerHTML="";
+  for(let i=1;i<=24;i++){
+    const d=document.createElement("div");
+    d.className="day"+(opened.includes(i)?" opened":"");
+    d.textContent=i;
+    d.onclick=()=>openDay(i);
+    calendar.appendChild(d);
+  }
+}
+
+/* ===== OPEN DAY ===== */
+function openDay(day){
+  if(opened.includes(day))return;
+  if(day!==opened.length+1){alert("Aún no puedes abrir este día");return;}
+
+  modal.style.display="flex";
+  giftText.textContent="";
+  countdown.textContent="3";
+  let c=3;
+  const t=setInterval(()=>{
+    c--;
+    countdown.textContent=c>0?c:"🎁🥰🥰";
+    if(c===0){
+      clearInterval(t);
+      giftText.textContent=gifts[day-1];
+    }
+  },700);
+
+  photoInput.value="";
+  photoInput.onchange=()=>{
+    const file=photoInput.files[0];
+    const storageRef=storage.ref(`adviento/${id}/day${day}.jpg`);
+    storageRef.put(file).then(()=>{
+      storageRef.getDownloadURL().then(url=>{
+        photos[day]=url;
+        opened.push(day);
+        modal.style.display="none";
+        save().then(()=>{
+          update(); renderCalendar(); renderGallery();
+        });
+      });
+    });
+  };
+}
+
+/* ===== GALLERY ===== */
+function renderGallery(){
+  const days=Object.keys(photos);
+  if(!days.length)return;
+  galleryIndex=Math.min(galleryIndex,days.length-1);
+  const d=days[galleryIndex];
+  galleryImg.src=photos[d];
+  galleryText.textContent="Día "+d+" – "+gifts[d-1];
+}
+window.prev=()=>{galleryIndex=Math.max(0,galleryIndex-1);renderGallery();}
+window.next=()=>{galleryIndex++;renderGallery();}
+</script>
+
 </body>
 </html>
