@@ -3,63 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento</title>
+<title>Calendario de Adviento 🎄</title>
 
 <style>
 :root{
   --pink:#f6c1d1;
   --lav:#e7c6ff;
   --mint:#c1e1dc;
-  --accent:#ff7a8a;
-  --text:#5b3c3c;
+  --accent:#ff6f91;
 }
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint));
-  color:var(--text);
+  min-height:100vh;
 }
-.app{max-width:900px;margin:auto;padding:20px;text-align:center}
-h1{color:#d81b60}
+
+.app{
+  max-width:800px;
+  margin:auto;
+  padding:20px;
+  text-align:center;
+}
+
+/* PORTADA */
+.cover{
+  margin-top:40px;
+}
+.cover h1{
+  font-size:2.5rem;
+  color:#d81b60;
+}
+.cover p{
+  font-size:1.1rem;
+}
+.cover button{
+  margin-top:25px;
+  padding:15px 40px;
+  border:none;
+  border-radius:30px;
+  background:var(--accent);
+  color:#fff;
+  font-size:1.1rem;
+}
 
 /* PROGRESO */
 .progressBox{
+  display:none;
   background:#fff;
+  padding:20px;
   border-radius:20px;
-  padding:12px;
-  margin:20px 0;
+  margin:30px 0;
 }
-.progressBar{
-  height:16px;
-  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
-  width:0%;
-  border-radius:10px;
-  transition:.3s;
+.hearts{
+  font-size:1.5rem;
+  margin-bottom:10px;
+}
+.progressText{
+  font-weight:bold;
 }
 
 /* CALENDARIO */
-.calendar{
+#calendar{
+  display:none;
+  margin-top:30px;
   display:grid;
   grid-template-columns:repeat(6,1fr);
-  gap:10px;
+  gap:12px;
 }
 .day{
   background:#fff;
-  padding:16px;
-  border-radius:14px;
-  font-weight:bold;
+  border-radius:16px;
+  padding:18px 0;
+  font-weight:700;
   cursor:pointer;
 }
-.day.opened{background:#ffe3ea}
+.day.saved{
+  background:#ffe3ea;
+}
 
 /* MODAL */
-.modal{
+#modal{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.6);
   align-items:center;
   justify-content:center;
+  z-index:10;
 }
 .modalBox{
   background:#fff;
@@ -69,7 +102,7 @@ h1{color:#d81b60}
   max-width:400px;
   position:relative;
 }
-.close{
+.closeBtn{
   position:absolute;
   top:10px;
   right:10px;
@@ -78,7 +111,7 @@ h1{color:#d81b60}
   border-radius:50%;
   width:32px;
   height:32px;
-  cursor:pointer;
+  font-size:18px;
 }
 .saveBtn{
   margin-top:15px;
@@ -90,34 +123,33 @@ h1{color:#d81b60}
   font-size:1rem;
 }
 
-/* GALERÍA 3x8 */
-.gallery{
+/* GALERÍA */
+#gallery{
+  display:none;
   margin-top:40px;
 }
-.grid{
+.galleryGrid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
-.card{
+.galleryItem{
   background:#fff;
-  padding:8px;
-  border-radius:12px;
+  border-radius:15px;
+  padding:10px;
 }
-.card img{
+.galleryItem img{
   width:100%;
-  height:140px;
-  object-fit:cover;
   border-radius:10px;
 }
-.card p{
-  font-size:.85rem;
-  margin:6px 0 0;
+footer{
+  margin:40px 0;
+  font-size:1.4rem;
+  color:#d81b60;
 }
 
 @media(max-width:600px){
-  .calendar{grid-template-columns:repeat(4,1fr)}
-  .grid{grid-template-columns:repeat(2,1fr)}
+  #calendar{grid-template-columns:repeat(4,1fr)}
 }
 </style>
 </head>
@@ -125,29 +157,124 @@ h1{color:#d81b60}
 <body>
 <div class="app">
 
-<h1>Calendario de Adviento</h1>
-
-<div class="progressBox">
-  <div class="progressBar" id="bar"></div>
-  <p id="progressText">Progreso: 0%</p>
+<div class="cover" id="cover">
+  <h1>Calendario de Adviento 🎄</h1>
+  <p>Un recuerdo por cada día</p>
+  <button onclick="start()">Comenzar</button>
 </div>
 
-<div class="calendar" id="calendar"></div>
+<div class="progressBox" id="progressBox">
+  <div class="hearts" id="hearts">🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍🤍</div>
+  <div class="progressText" id="progressText">Progreso: 0%</div>
+</div>
 
-<!-- MODAL -->
-<div class="modal" id="modal">
+<h2 id="calendarTitle" style="display:none">Calendario 🎁</h2>
+<div id="calendar"></div>
+
+<div id="modal">
   <div class="modalBox">
-    <button class="close" onclick="closeModal()">✖</button>
+    <button class="closeBtn" onclick="closeModal()">✖</button>
     <h3 id="modalTitle"></h3>
-    <div id="fileContainer"></div>
-    <button class="saveBtn" onclick="savePhoto()">Guardar recuerdo</button>
+    <input type="file" id="photoInput" accept="image/*">
+    <br>
+    <button class="saveBtn" onclick="savePhoto()">💾 Guardar recuerdo</button>
   </div>
 </div>
 
-<!-- GALERÍA -->
-<div class="gallery">
-  <h2>Galería de recuerdos</h2>
-  <div class="grid" id="galleryGrid"></div>
+<section id="gallery">
+  <h2>Galería de recuerdos 📸</h2>
+  <div class="galleryGrid" id="galleryGrid"></div>
+</section>
+
+<footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
+
 </div>
 
-<button class="saveBtn
+<script>
+const gifts=[
+"Sandalias","$10 dólares","Uñas manos","Uñas pies","Gancho","Salutaris",
+"Calcetines","Takis fuego","Toallas húmedas","Pringles queso","Starbucks","Ramo de flores",
+"Tosty / Bon Bon","Almendras","Limas","Chamoy","Gomitas","Vela aromática",
+"Algodón","Taza","Perfume Givenchy","Lipstick","Labial Givenchy","CK Euphoria"
+];
+
+let currentDay=null;
+let data=JSON.parse(localStorage.getItem("adviento"))||{};
+
+function start(){
+  document.getElementById("cover").style.display="none";
+  document.getElementById("progressBox").style.display="block";
+  document.getElementById("calendar").style.display="grid";
+  document.getElementById("calendarTitle").style.display="block";
+  document.getElementById("gallery").style.display="block";
+  renderCalendar();
+  renderGallery();
+  updateProgress();
+}
+
+function renderCalendar(){
+  const cal=document.getElementById("calendar");
+  cal.innerHTML="";
+  for(let i=1;i<=24;i++){
+    const d=document.createElement("div");
+    d.className="day"+(data[i]?" saved":"");
+    d.textContent=i;
+    d.onclick=()=>openDay(i);
+    cal.appendChild(d);
+  }
+}
+
+function openDay(day){
+  if(day===24){
+    const today=new Date();
+    const allowed=new Date("2025-12-24");
+    if(today<allowed){
+      alert("El día 24 solo se habilita el 24 de diciembre de 2025 🎄");
+      return;
+    }
+  }
+  currentDay=day;
+  document.getElementById("modalTitle").textContent=`Día ${day} – ${gifts[day-1]}`;
+  document.getElementById("photoInput").value="";
+  document.getElementById("modal").style.display="flex";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+function savePhoto(){
+  const file=document.getElementById("photoInput").files[0];
+  if(!file){alert("Selecciona una foto");return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    data[currentDay]={img:e.target.result,text:gifts[currentDay-1]};
+    localStorage.setItem("adviento",JSON.stringify(data));
+    closeModal();
+    renderCalendar();
+    renderGallery();
+    updateProgress();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderGallery(){
+  const grid=document.getElementById("galleryGrid");
+  grid.innerHTML="";
+  Object.keys(data).forEach(d=>{
+    const item=document.createElement("div");
+    item.className="galleryItem";
+    item.innerHTML=`<img src="${data[d].img}"><p>Día ${d} – ${data[d].text}</p>`;
+    grid.appendChild(item);
+  });
+}
+
+function updateProgress(){
+  const saved=Object.keys(data).length;
+  const percent=Math.round(saved/24*100);
+  document.getElementById("progressText").textContent=`Progreso: ${percent}%`;
+  document.getElementById("hearts").textContent="❤️".repeat(saved)+"🤍".repeat(24-saved);
+}
+</script>
+</body>
+</html>
