@@ -3,170 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎁 Calendario de Adviento para Macy</title>
+<title>🎁 Calendario de Adviento para Macy 🎁</title>
 
 <style>
 :root{
-  --pink:#f6c1d1;--lav:#e7c6ff;--mint:#c1e1dc;--beige:#fff4c1;
-  --accent:#ff7a8a;--text:#5b3c3c;
+  --pink:#f6c1d1;
+  --lav:#e7c6ff;
+  --mint:#c1e1dc;
+  --beige:#fff4c1;
+  --accent:#ff7a8a;
+  --text:#5b3c3c;
 }
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:linear-gradient(135deg,var(--pink),var(--lav),var(--mint),var(--beige));
   color:var(--text);
-  min-height:100vh;
 }
 .app{max-width:720px;margin:auto;padding:20px;text-align:center}
-#progressBox{background:#fff;padding:15px;border-radius:20px;margin:20px 0}
-#progressBar{height:18px;border-radius:10px;background:linear-gradient(90deg,#ff9aa2,#ffb7b2);width:0%}
-#calendar{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.day{background:#fff;border-radius:16px;padding:18px 0;font-weight:700}
-.day.opened{background:#ffe3ea}
-#modal{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.55);
-  align-items:center;justify-content:center;
+#calendar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.day{
+  background:#fff;border-radius:16px;padding:18px;font-weight:700;
 }
-.modalBox{
-  background:#fff;padding:25px;border-radius:20px;
-  width:90%;max-width:400px;position:relative;
-}
-.closeBtn{
-  position:absolute;top:10px;right:10px;
-  border:none;background:#eee;border-radius:50%;
-  width:32px;height:32px;font-size:18px;cursor:pointer;
-}
-.saveBtn{
-  margin-top:15px;padding:12px 26px;border:none;
-  border-radius:14px;
-  background:linear-gradient(90deg,#ff9aa2,#ffb7b2);
-  color:#fff;font-size:1rem;cursor:pointer;
-}
-#gallery{margin-top:30px}
-#gallery img{max-width:100%;border-radius:15px}
-footer{margin:40px 0;font-size:1.3rem;color:#d81b60}
-@media(max-width:600px){#calendar{grid-template-columns:repeat(4,1fr)}}
-</style>
-</head>
-
-<body>
-<div class="app">
-
-<h2>Calendario de Adviento 🎄</h2>
-
-<div id="progressBox">
-  <div id="progressBar"></div>
-  <p id="progressText">Progreso: 0%</p>
-</div>
-
-<div id="calendar"></div>
-
-<div id="modal">
-  <div class="modalBox">
-    <button class="closeBtn" onclick="closeModal()">✖</button>
-    <div id="giftText"></div>
-    <input type="file" id="photoInput" accept="image/*" style="display:none">
-    <button id="saveBtn" class="saveBtn" style="display:none">💾 Guardar recuerdo</button>
-  </div>
-</div>
-
-<section id="gallery">
-  <h3>Galería de recuerdos 📸</h3>
-  <img id="galleryImg">
-</section>
-
-<footer>Te ama mucho Rodri, mi amor Macy 💙</footer>
-
-</div>
-
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyCK0D5OufZdeqxpSS0uR0Q-v98ObLkBqso",
-  authDomain: "adviento-b07ca.firebaseapp.com",
-  projectId: "adviento-b07ca",
-  storageBucket: "adviento-b07ca.appspot.com",
-  messagingSenderId: "889474315050",
-  appId: "1:889474315050:web:e755804647ecde17796453"
-});
-
-const db=firebase.firestore();
-const storage=firebase.storage();
-
-const gifts=[...Array(24)].map((_,i)=>`Regalo del día ${i+1}`);
-const id="macy";
-
-let data={opened:[],photo24:null};
-let selectedFile=null;
-let currentDay=null;
-
-const calendar=document.getElementById("calendar");
-const modal=document.getElementById("modal");
-const giftText=document.getElementById("giftText");
-const photoInput=document.getElementById("photoInput");
-const saveBtn=document.getElementById("saveBtn");
-const galleryImg=document.getElementById("galleryImg");
-
-const TARGET_DATE=new Date("2025-12-24T00:00:00");
-
-db.collection("calendars").doc(id).get().then(s=>{
-  if(s.exists) data=s.data();
-  else db.collection("calendars").doc(id).set(data);
-  render();
-});
-
-function render(){
-  calendar.innerHTML="";
-  data.opened.forEach(()=>{});
-  for(let i=1;i<=24;i++){
-    const d=document.createElement("div");
-    d.className="day"+(data.opened.includes(i)?" opened":"");
-    d.textContent=i;
-    d.onclick=()=>openDay(i);
-    calendar.appendChild(d);
-  }
-  if(data.photo24) galleryImg.src=data.photo24;
-  document.getElementById("progressBar").style.width=(data.opened.length/24*100)+"%";
-}
-
-function openDay(day){
-  currentDay=day;
-  giftText.textContent=gifts[day-1];
-  photoInput.style.display="none";
-  saveBtn.style.display="none";
-  modal.style.display="flex";
-
-  const now=new Date();
-
-  if(day===24 && now>=TARGET_DATE && !data.photo24){
-    photoInput.style.display="block";
-    saveBtn.style.display="inline-block";
-  }
-}
-
-photoInput.onchange=e=>selectedFile=e.target.files[0];
-
-saveBtn.onclick=()=>{
-  if(!selectedFile) return alert("Selecciona una foto");
-  const ref=storage.ref(`adviento/${id}/dia24.jpg`);
-  ref.put(selectedFile).then(()=>ref.getDownloadURL()).then(url=>{
-    data.photo24=url;
-    data.opened.push(24);
-    db.collection("calendars").doc(id).update(data).then(()=>{
-      modal.style.display="none";
-      render();
-    });
-  });
-};
-
-function closeModal(){modal.style.display="none";}
-</script>
-
-</body>
-</html>
+.day.opened{background:#ffe3ea
