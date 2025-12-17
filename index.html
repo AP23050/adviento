@@ -2,69 +2,57 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Calendario de Adviento para Macy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario de Adviento para Macy</title>
 
 <style>
 body{
   margin:0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#ffd1e8,#e0d4ff);
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg,#ffd6e8,#e9d7ff);
+  min-height:100vh;
   text-align:center;
+  overflow-x:hidden;
 }
 
 h1{
   color:#c2185b;
-  margin:20px 10px;
+  margin:20px 0;
 }
 
 .grid{
   display:grid;
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:12px;
   padding:20px;
+  max-width:420px;
+  margin:auto;
 }
 
 .day{
   background:#fff;
   border-radius:14px;
-  padding:18px 0;
-  font-size:18px;
+  padding:18px;
+  font-size:20px;
   font-weight:bold;
   cursor:pointer;
   box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
 
 .day.locked{
-  background:#f0f0f0;
-  color:#aaa;
+  background:#999;
+  color:#555;
   cursor:not-allowed;
 }
 
-.gallery{
-  padding:20px;
-}
-
-.gallery-grid{
-  display:grid;
-  grid-template-columns: repeat(3,1fr);
-  gap:10px;
-}
-
-.gallery-item img{
-  width:100%;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,.2);
-}
-
 .modal{
-  display:none;
   position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,.7);
-  justify-content:center;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
   align-items:center;
+  justify-content:center;
+  z-index:10;
 }
 
 .modal-content{
@@ -72,21 +60,46 @@ h1{
   border-radius:16px;
   padding:20px;
   max-width:90%;
+  width:360px;
 }
 
-.modal-content img{
+iframe{
   width:100%;
+  height:280px;
+  border:none;
   border-radius:12px;
 }
 
-.close{
-  margin-top:10px;
-  padding:10px 18px;
-  border:none;
+button{
   background:#c2185b;
   color:#fff;
+  border:none;
+  padding:12px 18px;
   border-radius:20px;
+  font-size:16px;
+  margin-top:12px;
   cursor:pointer;
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  padding:20px;
+}
+
+.gallery iframe{
+  height:120px;
+}
+
+.tree{
+  font-size:40px;
+  animation: blink 1.2s infinite alternate;
+}
+
+@keyframes blink{
+  0%{filter:brightness(1)}
+  100%{filter:brightness(1.6)}
 }
 </style>
 </head>
@@ -94,78 +107,92 @@ h1{
 <body>
 
 <h1>🎁 Calendario de Adviento para Macy</h1>
+<div class="tree">🎄</div>
 
 <div class="grid" id="calendar"></div>
 
 <h2>Galería de recuerdos 📸</h2>
-<div class="gallery">
-  <div class="gallery-grid" id="gallery"></div>
-</div>
+<div class="gallery" id="gallery"></div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
-    <img id="modalImg">
-    <br>
-    <button class="close" onclick="closeModal()">Cerrar</button>
+    <iframe id="modalFrame"></iframe>
+    <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
 
 <script>
-const gifts = {
-1:{text:"Sandalias",img:"https://drive.google.com/uc?export=view&id=10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
-2:{text:"$10.00",img:"https://drive.google.com/uc?export=view&id=1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
-3:{text:"Uñas manos",img:"https://drive.google.com/uc?export=view&id=1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
-4:{text:"Uñas pies",img:"https://drive.google.com/uc?export=view&id=1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
-5:{text:"Salutaris",img:"https://drive.google.com/uc?export=view&id=13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
-6:{text:"Calcetines",img:"https://drive.google.com/uc?export=view&id=11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
-7:{text:"Takis fuego",img:"https://drive.google.com/uc?export=view&id=1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
-8:{text:"Toallas húmedas",img:"https://drive.google.com/uc?export=view&id=1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
-9:{text:"Pringles queso",img:"https://drive.google.com/uc?export=view&id=1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
-10:{text:"Starbucks",img:"https://drive.google.com/uc?export=view&id=1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
-11:{text:"Tosh y bombón",img:"https://drive.google.com/uc?export=view&id=1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
-12:{text:"Ramo de flores",img:"https://drive.google.com/uc?export=view&id=1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
-13:{text:"Almendras",img:"https://drive.google.com/uc?export=view&id=1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
-14:{text:"Limas",img:"https://drive.google.com/uc?export=view&id=1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
-15:{text:"Chamoy",img:"https://drive.google.com/uc?export=view&id=1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
-16:{text:"Gomitas",img:"https://drive.google.com/uc?export=view&id=1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
-17:{text:"Vela aromática",img:"https://drive.google.com/uc?export=view&id=16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
-18:{text:"Taza Friends",img:"https://drive.google.com/uc?export=view&id=16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
-19:{text:"Perfume Givenchy",img:"https://drive.google.com/uc?export=view&id=1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
-20:{text:"Revlon",img:"https://drive.google.com/uc?export=view&id=17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
-21:{text:"Gancho",img:"https://drive.google.com/uc?export=view&id=1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
-22:{text:"Labial Givenchy",img:"https://drive.google.com/uc?export=view&id=19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
-23:{text:"Desmaquillador",img:"https://drive.google.com/uc?export=view&id=141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"}
+const hoy = new Date().getDate();
+
+const secret24 = "AMOR2025";
+
+const days = {
+1:{t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
+2:{t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
+3:{t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
+4:{t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
+5:{t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
+6:{t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
+7:{t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
+8:{t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
+9:{t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
+10:{t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
+11:{t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
+12:{t:"Flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
+13:{t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
+14:{t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
+15:{t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
+16:{t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
+17:{t:"Vela",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
+18:{t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
+19:{t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
+20:{t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
+21:{t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
+22:{t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
+23:{t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"},
+24:{t:"Sorpresa 🎁",id:""}
 };
 
-const today = new Date().getDate();
-const calendar = document.getElementById("calendar");
-const gallery = document.getElementById("gallery");
+const cal = document.getElementById("calendar");
+const gal = document.getElementById("gallery");
 
-for(let i=1;i<=24;i++){
-  const d=document.createElement("div");
-  d.className="day";
-  d.textContent=i;
+for(let d=1; d<=24; d++){
+  const div=document.createElement("div");
+  div.className="day";
+  div.textContent=d;
 
-  if(!gifts[i] || i>today){
-    d.classList.add("locked");
+  if(d>hoy){
+    div.classList.add("locked");
   }else{
-    d.onclick=()=>openModal(i);
-    gallery.innerHTML+=`
-      <div class="gallery-item">
-        <img src="${gifts[i].img}">
-      </div>`;
+    div.onclick=()=>openDay(d);
   }
-  calendar.appendChild(d);
+
+  cal.appendChild(div);
+
+  if(days[d].id){
+    gal.innerHTML+=`<iframe src="https://drive.google.com/file/d/${days[d].id}/preview"></iframe>`;
+  }
 }
 
-function openModal(i){
-  document.getElementById("modalTitle").textContent="Día "+i+" – "+gifts[i].text;
-  document.getElementById("modalImg").src=gifts[i].img;
+function openDay(d){
+  if(d===24){
+    const k=prompt("Clave especial 🎁");
+    if(k!==secret24) return;
+  }
+
+  document.getElementById("modalTitle").textContent=`Día ${d} – ${days[d].t}`;
+  document.getElementById("modalFrame").src=
+    days[d].id
+    ?`https://drive.google.com/file/d/${days[d].id}/preview`
+    :"";
   document.getElementById("modal").style.display="flex";
 }
+
 function closeModal(){
   document.getElementById("modal").style.display="none";
+  document.getElementById("modalFrame").src="";
 }
 </script>
 
