@@ -3,36 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento para Macy</title>
+<title>Calendario de Adviento para Macy 🎄</title>
 
 <style>
+html{scroll-behavior:smooth}
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#ffd6e8,#e8dcff);
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(135deg,#ffd6e8,#e6ddff);
   text-align:center;
 }
-h1{color:#c2185b;margin:20px}
-
-.grid{
+h1{color:#c2185b;margin:20px 0}
+button{
+  padding:12px 22px;
+  border:none;
+  border-radius:20px;
+  background:#c2185b;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+  margin:8px;
+}
+.counter{
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+.calendar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:15px;
   padding:20px;
+  max-width:500px;
+  margin:auto;
 }
 .day{
   background:white;
-  padding:20px;
+  padding:18px;
   border-radius:15px;
   font-size:18px;
   cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
 }
-.locked{
+.day.locked{
   background:#ddd;
   color:#999;
   cursor:not-allowed;
 }
-
 .modal{
   display:none;
   position:fixed;
@@ -40,36 +57,43 @@ h1{color:#c2185b;margin:20px}
   background:rgba(0,0,0,.5);
   justify-content:center;
   align-items:center;
+  z-index:10;
 }
 .modal-content{
   background:white;
   padding:20px;
   border-radius:15px;
   max-width:90%;
+  width:350px;
 }
-iframe{
+.modal iframe{
   width:100%;
-  height:300px;
-  border:none;
-  border-radius:10px;
+  height:220px;
+  border-radius:12px;
 }
-button{
-  margin-top:10px;
-  padding:10px 20px;
-  border:none;
-  background:#c2185b;
-  color:white;
-  border-radius:20px;
-  font-size:16px;
-}
-
 .gallery{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:10px;
+  gap:15px;
   padding:20px;
+  max-width:900px;
+  margin:auto;
 }
-.gallery iframe{height:120px}
+.gallery-item{
+  background:white;
+  padding:10px;
+  border-radius:12px;
+  box-shadow:0 4px 8px rgba(0,0,0,.1);
+}
+.gallery-item iframe{
+  width:100%;
+  height:140px;
+  border-radius:10px;
+}
+.gallery-item p{
+  margin:6px 0 0;
+  font-size:14px;
+}
 </style>
 </head>
 
@@ -77,10 +101,16 @@ button{
 
 <h1>🎁 Calendario de Adviento para Macy</h1>
 
-<div class="grid" id="calendar"></div>
+<div class="counter" id="counter">Días abiertos: 0 / 24</div>
 
-<h2>Galería de recuerdos 📸</h2>
-<div class="gallery" id="gallery"></div>
+<button onclick="goGallery()">📸 Colección</button>
+
+<div class="calendar" id="calendar"></div>
+
+<!-- GALERÍA (OCULTA) -->
+<h2 id="galleryTitle" style="display:none">📸 Colección completa</h2>
+<div class="gallery" id="gallery" style="display:none"></div>
+<button id="backBtn" style="display:none" onclick="goCalendar()">⬅ Volver al calendario</button>
 
 <!-- MODAL -->
 <div class="modal" id="modal">
@@ -92,60 +122,106 @@ button{
 </div>
 
 <script>
-const today = new Date();
-const dayToday = today.getDate();
-const month = today.getMonth(); // diciembre = 11
-
+/* ===== DATOS ===== */
 const gifts = [
-  {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
-  {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
-  {d:3,t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
-  {d:4,t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
-  {d:5,t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
-  {d:6,t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
-  {d:7,t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
-  {d:8,t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
-  {d:9,t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
-  {d:10,t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
-  {d:11,t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
-  {d:12,t:"Ramo de flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
-  {d:13,t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
-  {d:14,t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
-  {d:15,t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
-  {d:16,t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
-  {d:17,t:"Vela aromática",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
-  {d:18,t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
-  {d:19,t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
-  {d:20,t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
-  {d:21,t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
-  {d:22,t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
-  {d:23,t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"}
+ {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
+ {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
+ {d:3,t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
+ {d:4,t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
+ {d:5,t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
+ {d:6,t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
+ {d:7,t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
+ {d:8,t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
+ {d:9,t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
+ {d:10,t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
+ {d:11,t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
+ {d:12,t:"Ramo de flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
+ {d:13,t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
+ {d:14,t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
+ {d:15,t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
+ {d:16,t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
+ {d:17,t:"Vela aromática",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
+ {d:18,t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
+ {d:19,t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
+ {d:20,t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
+ {d:21,t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
+ {d:22,t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
+ {d:23,t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"},
+ {d:24,t:"Sorpresa final 💖",id:"",locked:true}
 ];
+
+const today=new Date();
+const dayToday=today.getDate();
+const month=today.getMonth();
 
 const calendar=document.getElementById("calendar");
 const gallery=document.getElementById("gallery");
+const counter=document.getElementById("counter");
 
+let openedCount=0;
+
+/* ===== CALENDARIO ===== */
 gifts.forEach(g=>{
-  const unlocked = (month===11 && dayToday>=g.d);
+  const unlocked=g.d!==24 && month===11 && dayToday>=g.d;
+  if(unlocked) openedCount++;
+
   const div=document.createElement("div");
-  div.className="day"+(unlocked?"":" locked");
+  div.className="day";
   div.textContent=g.d;
-  if(unlocked){
-    div.onclick=()=>openModal(g);
-    gallery.innerHTML+=`<iframe src="https://drive.google.com/file/d/${g.id}/preview"></iframe>`;
-  }
+
+  if(!unlocked && g.d!==24) div.classList.add("locked");
+
+  div.onclick=()=>{
+    if(g.d===24){
+      const pass=prompt("🔐 Ingresa la clave especial");
+      if(pass==="MR101025") openModal(g);
+      else alert("❌ Clave incorrecta");
+    }else if(unlocked){
+      openModal(g);
+    }
+  };
+
   calendar.appendChild(div);
+
+  if(g.id){
+    gallery.innerHTML+=`
+      <div class="gallery-item">
+        <iframe src="https://drive.google.com/file/d/${g.id}/preview"></iframe>
+        <p>Día ${g.d} – ${g.t}</p>
+      </div>`;
+  }
 });
 
+/* ===== CONTADOR ===== */
+counter.textContent=`Días abiertos: ${openedCount} / 24`;
+
+/* ===== MODAL ===== */
 function openModal(g){
   document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
-  document.getElementById("modalImg").src=`https://drive.google.com/file/d/${g.id}/preview`;
+  document.getElementById("modalImg").src=g.id
+    ?`https://drive.google.com/file/d/${g.id}/preview`
+    :"";
   document.getElementById("modal").style.display="flex";
 }
 function closeModal(){
   document.getElementById("modal").style.display="none";
+  document.getElementById("modalImg").src="";
+}
+
+/* ===== VISTAS ===== */
+function goGallery(){
+  document.getElementById("calendar").style.display="none";
+  document.getElementById("gallery").style.display="grid";
+  document.getElementById("galleryTitle").style.display="block";
+  document.getElementById("backBtn").style.display="inline-block";
+}
+function goCalendar(){
+  document.getElementById("calendar").style.display="grid";
+  document.getElementById("gallery").style.display="none";
+  document.getElementById("galleryTitle").style.display="none";
+  document.getElementById("backBtn").style.display="none";
 }
 </script>
 
 </body>
-</html> 
+</html>
