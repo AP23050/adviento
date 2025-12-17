@@ -3,72 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calendario de Adviento para Macy 🎄</title>
+<title>Calendario de Adviento 🎄</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:'Arial',sans-serif;
   background:linear-gradient(135deg,#ffd6e8,#e6ddff);
   text-align:center;
 }
 h1{color:#c2185b;margin:20px}
 button{
-  padding:12px 22px;
-  border:none;
-  border-radius:20px;
   background:#c2185b;
-  color:white;
+  color:#fff;
+  border:none;
+  padding:12px 24px;
+  border-radius:20px;
+  margin:8px;
   font-size:15px;
   cursor:pointer;
-  margin:8px;
 }
-.counter{font-weight:bold;margin-bottom:10px}
-
 .calendar{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:15px;
+  gap:14px;
   padding:20px;
-  max-width:500px;
+  max-width:520px;
   margin:auto;
 }
 .day{
-  background:white;
+  background:#fff;
   padding:18px;
   border-radius:15px;
   font-size:18px;
-  cursor:pointer;
 }
-.day.opened{
-  background:#ffb3d9;
-}
-.day.locked{
-  background:#ddd;
-  color:#888;
-}
-
-.gallery{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
-  padding:20px;
-  max-width:900px;
-  margin:auto;
-}
-
-.gallery-item{
-  background:white;
-  padding:10px;
-  border-radius:12px;
-}
-
-.gallery-item iframe{
-  width:100%;
-  height:140px;
-  border-radius:10px;
-}
-
+.day.opened{background:#ffb3d9}
 .modal{
   display:none;
   position:fixed;
@@ -77,15 +48,16 @@ button{
   justify-content:center;
   align-items:center;
 }
-
 .modal-content{
-  background:white;
+  background:#fff;
   padding:20px;
   border-radius:15px;
-  width:350px;
+  width:340px;
 }
-
-iframe{width:100%;height:220px;border-radius:12px}
+img{
+  max-width:100%;
+  border-radius:12px;
+}
 </style>
 </head>
 
@@ -93,136 +65,128 @@ iframe{width:100%;height:220px;border-radius:12px}
 
 <h1>🎁 Calendario de Adviento para Macy</h1>
 
-<div class="counter" id="counter"></div>
-
 <button onclick="goGallery()">📸 Colección</button>
+<button onclick="generatePDF()">📄 Descargar PDF</button>
 
 <div class="calendar" id="calendar"></div>
-
-<h2 id="galleryTitle" style="display:none">📸 Colección</h2>
-<div class="gallery" id="gallery" style="display:none"></div>
-<button id="backBtn" style="display:none" onclick="goCalendar()">⬅ Volver</button>
 
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
-    <iframe id="modalImg" style="display:none"></iframe>
-    <input type="file" id="local24" accept="image/*" style="display:none">
+    <img id="modalImg" style="display:none">
+    <input type="file" id="photo24" accept="image/*" style="display:none">
     <br>
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
 
 <script>
-const gifts = [
- {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
- {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
- {d:3,t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
- {d:4,t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
- {d:5,t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
- {d:6,t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
- {d:7,t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
- {d:8,t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
- {d:9,t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
- {d:10,t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
- {d:11,t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
- {d:12,t:"Ramo de flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
- {d:13,t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
- {d:14,t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
- {d:15,t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
- {d:16,t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
- {d:17,t:"Vela aromática",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
- {d:18,t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
- {d:19,t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
- {d:20,t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
- {d:21,t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
- {d:22,t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
- {d:23,t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"},
- {d:24,t:"Sorpresa final 💖",id:""}
+const gifts=[
+"Sandalias","$10","Uñas manos","Uñas pies","Salutaris","Calcetines",
+"Takis fuego","Toallas húmedas","Pringles queso","Starbucks",
+"Tosh y bombón","Flores","Almendras","Limas","Chamoy","Gomitas",
+"Vela aromática","Taza Friends","Perfume Givenchy","Revlon",
+"Gancho","Labial Givenchy","Desmaquillador","Sorpresa final 💖"
 ];
 
-let opened = JSON.parse(localStorage.getItem("openedDays")||"[]");
+let opened=JSON.parse(localStorage.getItem("openedDays")||"[]");
+let images=JSON.parse(localStorage.getItem("images")||"{}");
 
 const calendar=document.getElementById("calendar");
-const gallery=document.getElementById("gallery");
-const counter=document.getElementById("counter");
 
 function render(){
   calendar.innerHTML="";
-  gallery.innerHTML="";
-  counter.textContent=`Días abiertos: ${opened.length} / 24`;
-
-  gifts.forEach(g=>{
+  for(let d=1; d<=24; d++){
     const div=document.createElement("div");
     div.className="day";
-    div.textContent=g.d;
-
-    if(opened.includes(g.d)) div.classList.add("opened");
-
-    div.onclick=()=>{
-      if(g.d===24){
-        const pass=prompt("Clave especial");
-        if(pass!=="MR101025") return alert("Clave incorrecta");
-      }
-      if(!opened.includes(g.d)){
-        opened.push(g.d);
-        localStorage.setItem("openedDays",JSON.stringify(opened));
-      }
-      openModal(g);
-      render();
-    };
-
+    div.textContent=d;
+    if(opened.includes(d)) div.classList.add("opened");
+    div.onclick=()=>openDay(d);
     calendar.appendChild(div);
-
-    if(opened.includes(g.d) && g.id){
-      gallery.innerHTML+=`
-        <div class="gallery-item">
-          <iframe src="https://drive.google.com/file/d/${g.id}/preview"></iframe>
-          <p>Día ${g.d} – ${g.t}</p>
-        </div>`;
-    }
-  });
+  }
 }
+render();
 
-function openModal(g){
-  const iframe=document.getElementById("modalImg");
-  const input=document.getElementById("local24");
-  iframe.style.display="none";
+function openDay(d){
+  if(d===24){
+    const pass=prompt("Clave especial");
+    if(pass!=="MR101025") return alert("Clave incorrecta");
+  }
+  if(!opened.includes(d)){
+    opened.push(d);
+    localStorage.setItem("openedDays",JSON.stringify(opened));
+  }
+  document.getElementById("modalTitle").textContent=`Día ${d} – ${gifts[d-1]}`;
+
+  const img=document.getElementById("modalImg");
+  const input=document.getElementById("photo24");
+  img.style.display="none";
   input.style.display="none";
 
-  document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
-
-  if(g.d===24){
+  if(d===24){
     input.style.display="block";
     input.onchange=()=>{
-      iframe.src=URL.createObjectURL(input.files[0]);
-      iframe.style.display="block";
+      const file=input.files[0];
+      const reader=new FileReader();
+      reader.onload=()=>{
+        images[d]=reader.result;
+        localStorage.setItem("images",JSON.stringify(images));
+        img.src=reader.result;
+        img.style.display="block";
+      };
+      reader.readAsDataURL(file);
     };
-  }else{
-    iframe.src=`https://drive.google.com/file/d/${g.id}/preview`;
-    iframe.style.display="block";
+  }else if(images[d]){
+    img.src=images[d];
+    img.style.display="block";
   }
+
   document.getElementById("modal").style.display="flex";
+  render();
 }
 
 function closeModal(){
   document.getElementById("modal").style.display="none";
 }
 
+/* ===== GALERÍA ===== */
 function goGallery(){
-  calendar.style.display="none";
-  gallery.style.display="grid";
-  document.getElementById("galleryTitle").style.display="block";
-  document.getElementById("backBtn").style.display="inline-block";
-}
-function goCalendar(){
-  calendar.style.display="grid";
-  gallery.style.display="none";
-  document.getElementById("galleryTitle").style.display="none";
-  document.getElementById("backBtn").style.display="none";
+  let html="";
+  opened.forEach(d=>{
+    if(images[d]){
+      html+=`<p>Día ${d} – ${gifts[d-1]}</p><img src="${images[d]}">`;
+    }
+  });
+  const w=window.open();
+  w.document.write(`<body style="font-family:Arial">${html}</body>`);
 }
 
-render();
+/* ===== PDF PROFESIONAL ===== */
+function generatePDF(){
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF("p","mm","a4");
+
+  pdf.setFillColor(255,230,240);
+  pdf.rect(0,0,210,297,"F");
+  pdf.setFontSize(24);
+  pdf.text("🎄 Calendario de Adviento 🎄",105,40,null,null,"center");
+  pdf.setFontSize(16);
+  pdf.text("Para Macy, con amor 💖",105,55,null,null,"center");
+
+  let x=15,y=70,c=0;
+  opened.forEach(d=>{
+    if(images[d]){
+      pdf.addImage(images[d],"JPEG",x,y,50,50);
+      pdf.text(`Día ${d}`,x,y+55);
+      c++;
+      x+=60;
+      if(c%3===0){x=15;y+=70;}
+      if(y>250){pdf.addPage();x=15;y=20;}
+    }
+  });
+
+  pdf.save("Calendario_Adviento_Macy.pdf");
+}
 </script>
 
 </body>
