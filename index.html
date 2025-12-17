@@ -8,77 +8,59 @@
 <style>
 body{
   margin:0;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(135deg,#ffd6e8,#e9d7ff);
-  min-height:100vh;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#ffd6e8,#e8dcff);
   text-align:center;
-  overflow-x:hidden;
 }
-
-h1{
-  color:#c2185b;
-  margin:20px 0;
-}
+h1{color:#c2185b;margin:20px}
 
 .grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:12px;
+  gap:15px;
   padding:20px;
-  max-width:420px;
-  margin:auto;
 }
-
 .day{
-  background:#fff;
-  border-radius:14px;
-  padding:18px;
-  font-size:20px;
-  font-weight:bold;
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  font-size:18px;
   cursor:pointer;
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
-
-.day.locked{
-  background:#999;
-  color:#555;
+.locked{
+  background:#ddd;
+  color:#999;
   cursor:not-allowed;
 }
 
 .modal{
+  display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.6);
-  display:none;
-  align-items:center;
+  background:rgba(0,0,0,.5);
   justify-content:center;
-  z-index:10;
+  align-items:center;
 }
-
 .modal-content{
-  background:#fff;
-  border-radius:16px;
+  background:white;
   padding:20px;
+  border-radius:15px;
   max-width:90%;
-  width:360px;
 }
-
 iframe{
   width:100%;
-  height:280px;
+  height:300px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
 }
-
 button{
-  background:#c2185b;
-  color:#fff;
+  margin-top:10px;
+  padding:10px 20px;
   border:none;
-  padding:12px 18px;
+  background:#c2185b;
+  color:white;
   border-radius:20px;
   font-size:16px;
-  margin-top:12px;
-  cursor:pointer;
 }
 
 .gallery{
@@ -87,27 +69,13 @@ button{
   gap:10px;
   padding:20px;
 }
-
-.gallery iframe{
-  height:120px;
-}
-
-.tree{
-  font-size:40px;
-  animation: blink 1.2s infinite alternate;
-}
-
-@keyframes blink{
-  0%{filter:brightness(1)}
-  100%{filter:brightness(1.6)}
-}
+.gallery iframe{height:120px}
 </style>
 </head>
 
 <body>
 
 <h1>🎁 Calendario de Adviento para Macy</h1>
-<div class="tree">🎄</div>
 
 <div class="grid" id="calendar"></div>
 
@@ -118,81 +86,64 @@ button{
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
-    <iframe id="modalFrame"></iframe>
+    <iframe id="modalImg"></iframe>
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
 
 <script>
-const hoy = new Date().getDate();
+const today = new Date();
+const dayToday = today.getDate();
+const month = today.getMonth(); // diciembre = 11
 
-const secret24 = "AMOR2025";
+const gifts = [
+  {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
+  {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
+  {d:3,t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
+  {d:4,t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
+  {d:5,t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
+  {d:6,t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
+  {d:7,t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
+  {d:8,t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
+  {d:9,t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
+  {d:10,t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
+  {d:11,t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
+  {d:12,t:"Ramo de flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
+  {d:13,t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
+  {d:14,t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
+  {d:15,t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
+  {d:16,t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
+  {d:17,t:"Vela aromática",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
+  {d:18,t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
+  {d:19,t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
+  {d:20,t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
+  {d:21,t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
+  {d:22,t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
+  {d:23,t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"}
+];
 
-const days = {
-1:{t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
-2:{t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
-3:{t:"Uñas manos",id:"1dQc7cgO8v5YT03KfFpc-7IXdA4t-6eGI"},
-4:{t:"Uñas pies",id:"1JRqw_G6R73lZSOeoDKoJExAvLUTuKEvI"},
-5:{t:"Salutaris",id:"13lS5c4rYYx8opam67AfF3B3mN_V01sYz"},
-6:{t:"Calcetines",id:"11B4FCI6k7JXlcHPQlQhX7YdGIQb0aKEJ"},
-7:{t:"Takis fuego",id:"1RZylG-aJcs1dev_ME4MBHFlQkjvmo_5a"},
-8:{t:"Toallas húmedas",id:"1SwkC_PHpLnQUZ_YxrTo5-t0a8VNxnCkG"},
-9:{t:"Pringles queso",id:"1qawWRiIgcsQO9v4ecEnjGjPzlCexyJjD"},
-10:{t:"Starbucks",id:"1VcftNU8xG3h9wC-_3ydVcXVRN2EzQUw1"},
-11:{t:"Tosh y bombón",id:"1gQwLQVnQ6YUgSqDPzxzGEIsrS_Lzun20"},
-12:{t:"Flores",id:"1OmN43-1H4D6H5Y0HEca_Re0-HfGusexY"},
-13:{t:"Almendras",id:"1wn80nu5RTlgHiA38wNk68kS6t-cpVR1W"},
-14:{t:"Limas",id:"1zFwAfgn6x5zKguGgSv7g6c2YdKjbnvQO"},
-15:{t:"Chamoy",id:"1NuQFMQCZN323BErAQmDpizIObqjBHYgv"},
-16:{t:"Gomitas",id:"1Uk8otAJ5845rVPMsc7C13grP2AttmgJx"},
-17:{t:"Vela",id:"16y4jM7Jg4s5-qd7DsJexNCXHRDdv5587"},
-18:{t:"Taza Friends",id:"16IrQT1V9MGhFdy2eFjyBu6xkXeOBjA0w"},
-19:{t:"Perfume Givenchy",id:"1bN0igDoriiA_wXpXw8nPiQgPGsJEVrMv"},
-20:{t:"Revlon",id:"17xOoA_M1Vw2YXtKCJIzO9_MBl7bH1tk7"},
-21:{t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
-22:{t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
-23:{t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"},
-24:{t:"Sorpresa 🎁",id:""}
-};
+const calendar=document.getElementById("calendar");
+const gallery=document.getElementById("gallery");
 
-const cal = document.getElementById("calendar");
-const gal = document.getElementById("gallery");
-
-for(let d=1; d<=24; d++){
+gifts.forEach(g=>{
+  const unlocked = (month===11 && dayToday>=g.d);
   const div=document.createElement("div");
-  div.className="day";
-  div.textContent=d;
-
-  if(d>hoy){
-    div.classList.add("locked");
-  }else{
-    div.onclick=()=>openDay(d);
+  div.className="day"+(unlocked?"":" locked");
+  div.textContent=g.d;
+  if(unlocked){
+    div.onclick=()=>openModal(g);
+    gallery.innerHTML+=`<iframe src="https://drive.google.com/file/d/${g.id}/preview"></iframe>`;
   }
+  calendar.appendChild(div);
+});
 
-  cal.appendChild(div);
-
-  if(days[d].id){
-    gal.innerHTML+=`<iframe src="https://drive.google.com/file/d/${days[d].id}/preview"></iframe>`;
-  }
-}
-
-function openDay(d){
-  if(d===24){
-    const k=prompt("Clave especial 🎁");
-    if(k!==secret24) return;
-  }
-
-  document.getElementById("modalTitle").textContent=`Día ${d} – ${days[d].t}`;
-  document.getElementById("modalFrame").src=
-    days[d].id
-    ?`https://drive.google.com/file/d/${days[d].id}/preview`
-    :"";
+function openModal(g){
+  document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
+  document.getElementById("modalImg").src=`https://drive.google.com/file/d/${g.id}/preview`;
   document.getElementById("modal").style.display="flex";
 }
-
 function closeModal(){
   document.getElementById("modal").style.display="none";
-  document.getElementById("modalFrame").src="";
 }
 </script>
 
