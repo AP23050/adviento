@@ -108,7 +108,7 @@ button{
 <div class="calendar" id="calendar"></div>
 
 <!-- GALERÍA (OCULTA) -->
-<h2 id="galleryTitle" style="display:none">📸 Colección completa</h2>
+<h2 id="galleryTitle" style="display:none">📸 Colección</h2>
 <div class="gallery" id="gallery" style="display:none"></div>
 <button id="backBtn" style="display:none" onclick="goCalendar()">⬅ Volver al calendario</button>
 
@@ -116,13 +116,17 @@ button{
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
-    <iframe id="modalImg"></iframe>
+    <iframe id="modalImg" style="display:none"></iframe>
+
+    <!-- SOLO PARA DÍA 24 -->
+    <input type="file" id="localPhoto24" accept="image/*"
+      style="display:none;margin-top:10px">
+
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
 
 <script>
-/* ===== DATOS ===== */
 const gifts = [
  {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
  {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
@@ -160,7 +164,7 @@ const counter=document.getElementById("counter");
 
 let openedCount=0;
 
-/* ===== CALENDARIO ===== */
+/* ===== CALENDARIO + COLECCIÓN SOLO DÍAS ABIERTOS ===== */
 gifts.forEach(g=>{
   const unlocked=g.d!==24 && month===11 && dayToday>=g.d;
   if(unlocked) openedCount++;
@@ -183,7 +187,8 @@ gifts.forEach(g=>{
 
   calendar.appendChild(div);
 
-  if(g.id){
+  // 👉 SOLO DÍAS ABIERTOS EN COLECCIÓN
+  if(unlocked && g.id){
     gallery.innerHTML+=`
       <div class="gallery-item">
         <iframe src="https://drive.google.com/file/d/${g.id}/preview"></iframe>
@@ -192,15 +197,33 @@ gifts.forEach(g=>{
   }
 });
 
-/* ===== CONTADOR ===== */
 counter.textContent=`Días abiertos: ${openedCount} / 24`;
 
 /* ===== MODAL ===== */
 function openModal(g){
+  const iframe=document.getElementById("modalImg");
+  const input=document.getElementById("localPhoto24");
+
+  iframe.style.display="none";
+  input.style.display="none";
+  iframe.src="";
+
   document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
-  document.getElementById("modalImg").src=g.id
-    ?`https://drive.google.com/file/d/${g.id}/preview`
-    :"";
+
+  if(g.d!==24){
+    iframe.src=`https://drive.google.com/file/d/${g.id}/preview`;
+    iframe.style.display="block";
+  }else{
+    input.style.display="block";
+    input.onchange=()=>{
+      const file=input.files[0];
+      if(file){
+        iframe.src=URL.createObjectURL(file);
+        iframe.style.display="block";
+      }
+    };
+  }
+
   document.getElementById("modal").style.display="flex";
 }
 function closeModal(){
@@ -210,14 +233,14 @@ function closeModal(){
 
 /* ===== VISTAS ===== */
 function goGallery(){
-  document.getElementById("calendar").style.display="none";
-  document.getElementById("gallery").style.display="grid";
+  calendar.style.display="none";
+  gallery.style.display="grid";
   document.getElementById("galleryTitle").style.display="block";
   document.getElementById("backBtn").style.display="inline-block";
 }
 function goCalendar(){
-  document.getElementById("calendar").style.display="grid";
-  document.getElementById("gallery").style.display="none";
+  calendar.style.display="grid";
+  gallery.style.display="none";
   document.getElementById("galleryTitle").style.display="none";
   document.getElementById("backBtn").style.display="none";
 }
