@@ -7,8 +7,6 @@
 
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- html2canvas -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 body{
@@ -103,7 +101,7 @@ button{
 <div class="calendar" id="calendar"></div>
 
 <h2 id="galleryTitle" style="display:none">📸 Colección</h2>
-<div class="gallery" id="gallery" style="display:none" data-export="true"></div>
+<div class="gallery" id="gallery" style="display:none"></div>
 <button id="backBtn" style="display:none" onclick="goCalendar()">⬅ Volver</button>
 
 <div class="modal" id="modal">
@@ -119,7 +117,7 @@ button{
 /* ===== CONFIG ===== */
 const CLAVE_24 = "MR101025";
 
-/* ===== REGALOS (GOOGLE DRIVE IDs) ===== */
+/* ===== REGALOS (IDs DE DRIVE) ===== */
 const gifts = [
  {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
  {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
@@ -170,7 +168,7 @@ function render(){
     if(opened.includes(g.d)){
       gallery.innerHTML+=`
         <div class="gallery-item">
-          <img src="https://drive.google.com/uc?export=view&id=${g.id}" crossorigin="anonymous">
+          <img src="https://drive.google.com/uc?export=view&id=${g.id}">
           <p>Día ${g.d} – ${g.t}</p>
         </div>`;
     }
@@ -183,22 +181,17 @@ function openDay(g){
     const pass=prompt("🔐 Ingresa la clave especial");
     if(pass!==CLAVE_24) return alert("❌ Clave incorrecta");
   }
-
   if(!opened.includes(g.d)){
     opened.push(g.d);
     localStorage.setItem("openedDays",JSON.stringify(opened));
   }
-
   document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
   document.getElementById("modalImg").src=
     `https://drive.google.com/uc?export=view&id=${g.id}`;
   document.getElementById("modal").style.display="flex";
   render();
 }
-
-function closeModal(){
-  document.getElementById("modal").style.display="none";
-}
+function closeModal(){ document.getElementById("modal").style.display="none"; }
 
 /* ===== VIEWS ===== */
 function goGallery(){
@@ -214,20 +207,12 @@ function goCalendar(){
   document.getElementById("backBtn").style.display="none";
 }
 
-/* ===== PDF ===== */
+/* ===== PDF (IMAGEN POR IMAGEN, 3x4 POR PÁGINA) ===== */
 async function generatePDF(){
-  const galleryEl=document.getElementById("gallery");
-  const wasHidden=galleryEl.style.display==="none";
-  galleryEl.style.display="grid";
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p","mm","a4");
 
-  await new Promise(r=>setTimeout(r,600));
-
-  const canvas=await html2canvas(galleryEl,{useCORS:true,scale:2});
-  const imgData=canvas.toDataURL("image/jpeg",0.95);
-
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF("p","mm","a4");
-
+  // Portada
   pdf.setFillColor(255,230,240);
   pdf.rect(0,0,210,297,"F");
   pdf.setFontSize(24);
@@ -235,15 +220,37 @@ async function generatePDF(){
   pdf.setFontSize(16);
   pdf.text("Para Macy, con amor 💖",105,55,null,null,"center");
 
+  let x=15, y=20, col=0;
   pdf.addPage();
 
-  const imgW=190;
-  const imgH=(canvas.height*imgW)/canvas.width;
-  pdf.addImage(imgData,"JPEG",10,10,imgW,imgH);
+  for(const g of gifts){
+    if(!opened.includes(g.d)) continue;
+
+    const img = await loadImage(`https://drive.google.com/uc?export=view&id=${g.id}`);
+
+    pdf.addImage(img,"JPEG",x,y,55,55);
+    pdf.text(`Día ${g.d}`,x,y+60);
+    pdf.text(g.t,x,y+66,{maxWidth:55});
+
+    x+=60; col++;
+    if(col===3){ col=0; x=15; y+=75; }
+    if(y>230){
+      pdf.addPage();
+      x=15; y=20; col=0;
+    }
+  }
 
   pdf.save("Calendario_Adviento_Macy.pdf");
+}
 
-  if(wasHidden) galleryEl.style.display="none";
+function loadImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin="anonymous";
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=src;
+  });
 }
 
 render();
