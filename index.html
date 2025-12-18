@@ -10,7 +10,7 @@
 <style>
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:'Arial',sans-serif;
   background:linear-gradient(135deg,#ffd6e8,#e6ddff);
   text-align:center;
 }
@@ -23,6 +23,7 @@ button{
   border-radius:20px;
   margin:8px;
   font-size:15px;
+  cursor:pointer;
 }
 .calendar{
   display:grid;
@@ -39,15 +40,6 @@ button{
   font-size:18px;
 }
 .day.opened{background:#ffb3d9}
-.day.locked{opacity:.4}
-
-a.day-link{
-  display:block;
-  color:#c2185b;
-  font-weight:600;
-  text-decoration:none;
-}
-
 .modal{
   display:none;
   position:fixed;
@@ -66,20 +58,6 @@ img{
   max-width:100%;
   border-radius:12px;
 }
-#gallery{
-  display:none;
-  padding:20px;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
-}
-.card{
-  background:#fff;
-  border-radius:12px;
-  padding:10px;
-}
 </style>
 </head>
 
@@ -87,24 +65,17 @@ img{
 
 <h1>🎁 Calendario de Adviento para Macy</h1>
 
-<button onclick="showCalendar()">📅 Calendario</button>
-<button onclick="showGallery()">📸 Colección</button>
-<button onclick="generatePDF()">📄 PDF</button>
+<button onclick="goGallery()">📸 Colección</button>
+<button onclick="generatePDF()">📄 Descargar PDF</button>
 
 <div class="calendar" id="calendar"></div>
-
-<div id="gallery">
-  <h2>💖 Colección de recuerdos</h2>
-  <div class="grid" id="galleryGrid"></div>
-  <button onclick="showCalendar()">← Volver</button>
-</div>
 
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
     <img id="modalImg" style="display:none">
     <input type="file" id="photo24" accept="image/*" style="display:none">
-    <br><br>
+    <br>
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
@@ -128,15 +99,9 @@ function render(){
   for(let d=1; d<=24; d++){
     const div=document.createElement("div");
     div.className="day";
+    div.textContent=d;
     if(opened.includes(d)) div.classList.add("opened");
-
-    const a=document.createElement("a");
-    a.href="#";
-    a.className="day-link";
-    a.textContent=d;
-    a.onclick=(e)=>{e.preventDefault();openDay(d)};
-
-    div.appendChild(a);
+    div.onclick=()=>openDay(d);
     calendar.appendChild(div);
   }
 }
@@ -145,14 +110,12 @@ render();
 function openDay(d){
   if(d===24){
     const pass=prompt("Clave especial");
-    if(pass!=="MR101025") return;
+    if(pass!=="MR101025") return alert("Clave incorrecta");
   }
-
   if(!opened.includes(d)){
     opened.push(d);
     localStorage.setItem("openedDays",JSON.stringify(opened));
   }
-
   document.getElementById("modalTitle").textContent=`Día ${d} – ${gifts[d-1]}`;
 
   const img=document.getElementById("modalImg");
@@ -186,48 +149,43 @@ function closeModal(){
   document.getElementById("modal").style.display="none";
 }
 
-function showGallery(){
-  document.getElementById("calendar").style.display="none";
-  document.getElementById("gallery").style.display="block";
-
-  const grid=document.getElementById("galleryGrid");
-  grid.innerHTML="";
+/* ===== GALERÍA ===== */
+function goGallery(){
+  let html="";
   opened.forEach(d=>{
     if(images[d]){
-      grid.innerHTML+=`
-      <div class="card">
-        <img src="${images[d]}">
-        <p>Día ${d} – ${gifts[d-1]}</p>
-      </div>`;
+      html+=`<p>Día ${d} – ${gifts[d-1]}</p><img src="${images[d]}">`;
     }
   });
+  const w=window.open();
+  w.document.write(`<body style="font-family:Arial">${html}</body>`);
 }
 
-function showCalendar(){
-  document.getElementById("gallery").style.display="none";
-  document.getElementById("calendar").style.display="grid";
-}
-
-/* ===== PDF ===== */
+/* ===== PDF PROFESIONAL ===== */
 function generatePDF(){
   const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF();
+  const pdf=new jsPDF("p","mm","a4");
 
-  pdf.setFontSize(22);
-  pdf.text("Calendario de Adviento",105,30,null,null,"center");
+  pdf.setFillColor(255,230,240);
+  pdf.rect(0,0,210,297,"F");
+  pdf.setFontSize(24);
+  pdf.text("🎄 Calendario de Adviento 🎄",105,40,null,null,"center");
+  pdf.setFontSize(16);
+  pdf.text("Para Macy, con amor 💖",105,55,null,null,"center");
 
-  let x=15,y=45,c=0;
+  let x=15,y=70,c=0;
   opened.forEach(d=>{
     if(images[d]){
-      pdf.addImage(images[d],"PNG",x,y,50,50);
-      pdf.text(`Día ${d} – ${gifts[d-1]}`,x,y+55);
-      x+=60;c++;
+      pdf.addImage(images[d],"JPEG",x,y,50,50);
+      pdf.text(`Día ${d}`,x,y+55);
+      c++;
+      x+=60;
       if(c%3===0){x=15;y+=70;}
       if(y>250){pdf.addPage();x=15;y=20;}
     }
   });
 
-  pdf.save("Calendario_Macy.pdf");
+  pdf.save("Calendario_Adviento_Macy.pdf");
 }
 </script>
 
