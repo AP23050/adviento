@@ -28,11 +28,7 @@ button{
   cursor:pointer;
   margin:8px;
 }
-.counter{
-  font-weight:bold;
-  margin-bottom:10px;
-  color:#444;
-}
+.counter{font-weight:bold;margin-bottom:10px;color:#444}
 
 .calendar{
   display:grid;
@@ -64,9 +60,10 @@ button{
   padding:12px;
   border-radius:15px;
 }
-.gallery-item iframe{
+.gallery-item img{
   width:100%;
   height:180px;
+  object-fit:cover;
   border-radius:12px;
 }
 
@@ -85,9 +82,10 @@ button{
   border-radius:15px;
   width:350px;
 }
-.modal-content iframe{
+.modal-content img{
   width:100%;
   height:220px;
+  object-fit:contain;
   border-radius:12px;
 }
 </style>
@@ -111,8 +109,8 @@ button{
 <div class="modal" id="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
-    <iframe id="modalFrame" style="display:none" allowfullscreen></iframe>
-    <br>
+    <img id="modalImg">
+    <br><br>
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
@@ -121,7 +119,7 @@ button{
 /* ===== CONFIG ===== */
 const CLAVE_24 = "MR101025";
 
-/* ===== REGALOS ===== */
+/* ===== REGALOS (GOOGLE DRIVE IDs) ===== */
 const gifts = [
  {d:1,t:"Sandalias",id:"10MQ_9LTLm0rm4gsv7bB0aW871Z3qXYNW"},
  {d:2,t:"$10.00",id:"1IEJqpf3QRRk1hZk7mGQnsbJ-AV1Ff10M"},
@@ -172,10 +170,7 @@ function render(){
     if(opened.includes(g.d)){
       gallery.innerHTML+=`
         <div class="gallery-item">
-          <iframe 
-            src="https://drive.google.com/file/d/${g.id}/preview"
-            allowfullscreen>
-          </iframe>
+          <img src="https://drive.google.com/uc?export=view&id=${g.id}" crossorigin="anonymous">
           <p>Día ${g.d} – ${g.t}</p>
         </div>`;
     }
@@ -194,11 +189,9 @@ function openDay(g){
     localStorage.setItem("openedDays",JSON.stringify(opened));
   }
 
-  const frame=document.getElementById("modalFrame");
-  frame.src=`https://drive.google.com/file/d/${g.id}/preview`;
-  frame.style.display="block";
-
   document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
+  document.getElementById("modalImg").src=
+    `https://drive.google.com/uc?export=view&id=${g.id}`;
   document.getElementById("modal").style.display="flex";
   render();
 }
@@ -221,27 +214,22 @@ function goCalendar(){
   document.getElementById("backBtn").style.display="none";
 }
 
-/* ===== PDF (HTML → CANVAS → PDF) ===== */
+/* ===== PDF ===== */
 async function generatePDF(){
-  const galleryEl = document.getElementById("gallery");
-  const wasHidden = galleryEl.style.display === "none";
+  const galleryEl=document.getElementById("gallery");
+  const wasHidden=galleryEl.style.display==="none";
+  galleryEl.style.display="grid";
 
-  galleryEl.style.display = "grid";
-  await new Promise(r=>setTimeout(r,500));
+  await new Promise(r=>setTimeout(r,600));
 
-  const canvas = await html2canvas(galleryEl,{
-    useCORS:true,
-    scale:2
-  });
+  const canvas=await html2canvas(galleryEl,{useCORS:true,scale:2});
+  const imgData=canvas.toDataURL("image/jpeg",0.95);
 
-  const imgData = canvas.toDataURL("image/jpeg",0.95);
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p","mm","a4");
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF("p","mm","a4");
 
   pdf.setFillColor(255,230,240);
   pdf.rect(0,0,210,297,"F");
-
   pdf.setFontSize(24);
   pdf.text("🎄 Calendario de Adviento 🎄",105,40,null,null,"center");
   pdf.setFontSize(16);
@@ -249,17 +237,13 @@ async function generatePDF(){
 
   pdf.addPage();
 
-  const pageWidth = 210;
-  const imgWidth = pageWidth - 20;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  pdf.addImage(imgData,"JPEG",10,10,imgWidth,imgHeight);
+  const imgW=190;
+  const imgH=(canvas.height*imgW)/canvas.width;
+  pdf.addImage(imgData,"JPEG",10,10,imgW,imgH);
 
   pdf.save("Calendario_Adviento_Macy.pdf");
 
-  if(wasHidden){
-    galleryEl.style.display="none";
-  }
+  if(wasHidden) galleryEl.style.display="none";
 }
 
 render();
