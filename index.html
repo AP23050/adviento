@@ -23,11 +23,7 @@ button{
   cursor:pointer;
   margin:8px;
 }
-.counter{
-  font-weight:bold;
-  margin-bottom:10px;
-  color:#444;
-}
+.counter{font-weight:bold;margin-bottom:10px;color:#444}
 
 .calendar{
   display:grid;
@@ -44,13 +40,7 @@ button{
   font-size:18px;
   cursor:pointer;
 }
-.day.opened{
-  background:#ffb3d9;
-}
-.day.locked{
-  background:#ddd;
-  color:#888;
-}
+.day.opened{background:#ffb3d9}
 
 .gallery{
   display:grid;
@@ -95,7 +85,6 @@ button{
   height:220px;
   border-radius:12px;
 }
-
 </style>
 </head>
 
@@ -117,8 +106,7 @@ button{
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
     <iframe id="modalFrame" style="display:none" allowfullscreen></iframe>
-    <input type="file" id="local24" accept="image/*" style="display:none">
-    <br><br>
+    <br>
     <button onclick="closeModal()">Cerrar</button>
   </div>
 </div>
@@ -150,11 +138,10 @@ const gifts = [
  {d:21,t:"Gancho",id:"1UrCTKjVoP346ZpePevL1Vr0qhPAODSCj"},
  {d:22,t:"Labial Givenchy",id:"19Righe5of8ZBTiZ1zvGolp-PWqDS6Pgf"},
  {d:23,t:"Desmaquillador",id:"141E5Bc0SPFgbD7nlXF7LYKcXpPcxaCH7"},
- {d:24,t:"Sorpresa final 💖",id:""}
+ {d:24,t:"Regalo de sorpresa 🎁",id:"1trTCz5Z_hOJMZ3IgwAOGmvzig16-bsdx"}
 ];
 
 let opened = JSON.parse(localStorage.getItem("openedDays")||"[]");
-let local24 = localStorage.getItem("img24") || "";
 
 const calendar=document.getElementById("calendar");
 const gallery=document.getElementById("gallery");
@@ -176,30 +163,22 @@ function render(){
     calendar.appendChild(div);
 
     if(opened.includes(g.d)){
-      if(g.d===24 && local24){
-        addGalleryItem(g, local24, true);
-      }else if(g.id){
-        addGalleryItem(g, `https://drive.google.com/file/d/${g.id}/preview`, false);
-      }
+      gallery.innerHTML+=`
+        <div class="gallery-item">
+          <iframe 
+            src="https://drive.google.com/file/d/${g.id}/preview"
+            allowfullscreen>
+          </iframe>
+          <p>Día ${g.d} – ${g.t}</p>
+        </div>`;
     }
   });
 }
 
-function addGalleryItem(g, src, isLocal){
-  gallery.innerHTML+=`
-    <div class="gallery-item">
-      ${isLocal
-        ? `<img src="${src}" style="width:100%;border-radius:12px">`
-        : `<iframe src="${src}" allowfullscreen></iframe>`
-      }
-      <p>Día ${g.d} – ${g.t}</p>
-    </div>`;
-}
-
 function openDay(g){
   if(g.d===24){
-    const pass=prompt("Clave especial");
-    if(pass!==CLAVE_24) return alert("Clave incorrecta");
+    const pass=prompt("🔐 Ingresa la clave especial");
+    if(pass!==CLAVE_24) return alert("❌ Clave incorrecta");
   }
 
   if(!opened.includes(g.d)){
@@ -208,29 +187,10 @@ function openDay(g){
   }
 
   const frame=document.getElementById("modalFrame");
-  const input=document.getElementById("local24");
-  frame.style.display="none";
-  input.style.display="none";
+  frame.src=`https://drive.google.com/file/d/${g.id}/preview`;
+  frame.style.display="block";
 
   document.getElementById("modalTitle").textContent=`Día ${g.d} – ${g.t}`;
-
-  if(g.d===24){
-    input.style.display="block";
-    input.onchange=()=>{
-      const file=input.files[0];
-      const reader=new FileReader();
-      reader.onload=()=>{
-        local24=reader.result;
-        localStorage.setItem("img24",local24);
-        frame.outerHTML=`<img src="${local24}" style="width:100%;border-radius:12px">`;
-      };
-      reader.readAsDataURL(file);
-    };
-  }else{
-    frame.src=`https://drive.google.com/file/d/${g.id}/preview`;
-    frame.style.display="block";
-  }
-
   document.getElementById("modal").style.display="flex";
   render();
 }
