@@ -7,6 +7,8 @@
 
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
 body{
@@ -51,7 +53,7 @@ button{
 
 .gallery{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns:repeat(3,1fr);
   gap:15px;
   padding:20px;
   max-width:1000px;
@@ -103,7 +105,7 @@ button{
 <div class="calendar" id="calendar"></div>
 
 <h2 id="galleryTitle" style="display:none">📸 Colección</h2>
-<div class="gallery" id="gallery" style="display:none"></div>
+<div class="gallery" id="gallery" style="display:none" data-export="true"></div>
 <button id="backBtn" style="display:none" onclick="goCalendar()">⬅ Volver</button>
 
 <div class="modal" id="modal">
@@ -219,8 +221,21 @@ function goCalendar(){
   document.getElementById("backBtn").style.display="none";
 }
 
-/* ===== PDF ===== */
-function generatePDF(){
+/* ===== PDF (HTML → CANVAS → PDF) ===== */
+async function generatePDF(){
+  const galleryEl = document.getElementById("gallery");
+  const wasHidden = galleryEl.style.display === "none";
+
+  galleryEl.style.display = "grid";
+  await new Promise(r=>setTimeout(r,500));
+
+  const canvas = await html2canvas(galleryEl,{
+    useCORS:true,
+    scale:2
+  });
+
+  const imgData = canvas.toDataURL("image/jpeg",0.95);
+
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF("p","mm","a4");
 
@@ -234,20 +249,17 @@ function generatePDF(){
 
   pdf.addPage();
 
-  let x=15,y=20,c=0;
-  gifts.forEach(g=>{
-    if(opened.includes(g.d)){
-      const img=`https://drive.google.com/uc?export=view&id=${g.id}`;
-      pdf.addImage(img,"JPEG",x,y,55,55);
-      pdf.text(`Día ${g.d}`,x,y+60);
-      pdf.text(g.t,x,y+67,{maxWidth:55});
-      x+=60;c++;
-      if(c%3===0){x=15;y+=75;}
-      if(y>240){pdf.addPage();x=15;y=20;}
-    }
-  });
+  const pageWidth = 210;
+  const imgWidth = pageWidth - 20;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  pdf.addImage(imgData,"JPEG",10,10,imgWidth,imgHeight);
 
   pdf.save("Calendario_Adviento_Macy.pdf");
+
+  if(wasHidden){
+    galleryEl.style.display="none";
+  }
 }
 
 render();
